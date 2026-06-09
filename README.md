@@ -32,10 +32,11 @@
 
 ## 🚀 Projects Built During Internship
 
-### 1. 🏫 CampusOS — College Management System
+### 1. 🏫 Colleqo — College Management Platform
 > *Full-stack PWA for modern educational institutions*
 
-[![CampusOS](https://img.shields.io/badge/Repo-CampusOS-0D1117?style=for-the-badge&logo=github)](https://github.com/artist-hks/CampusOS)
+[![Colleqo](https://img.shields.io/badge/Repo-Colleqo-0D1117?style=for-the-badge&logo=github)](https://github.com/artist-hks/Colleqo)
+[![Live Demo](https://img.shields.io/badge/Live-campusos.pages.dev-4CAF50?style=for-the-badge&logo=cloudflare&logoColor=white)](https://campusos.pages.dev)
 ![TypeScript](https://img.shields.io/badge/TypeScript-50%25-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-50%25-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
 
@@ -92,13 +93,13 @@
 
 | Date | Day | Work Done | Key Learnings |
 |------|-----|-----------|---------------|
-| **18 May** | Day 1 | 🔰 Internship kickoff. Environment setup — Node.js, MongoDB, VS Code extensions. Understood project scope and requirements for CampusOS. Studied existing codebase structure. | MERN project structure, monorepo setup, understanding Hono framework for edge workers |
-| **19 May** | Day 2 | ⚙️ Set up Cloudflare Workers + D1 database locally via Wrangler CLI. Initialized Vite build config with TailwindCSS. Created base project scaffolding for CampusOS. | Cloudflare D1 (serverless SQLite), Wrangler CLI workflow, edge computing basics |
-| **20 May** | Day 3 | 🗄️ Designed DB schema for CampusOS — users, tenants, roles, attendance, timetable tables. Wrote SQL migrations. Set up role-based middleware logic. | Database schema design, multi-tenant architecture pattern, RBAC implementation |
+| **18 May** | Day 1 | 🔰 Internship kickoff. Environment setup — Node.js, MongoDB, VS Code extensions. Understood project scope and requirements for Colleqo. Studied existing codebase structure. | MERN project structure, monorepo setup, understanding Hono framework for edge workers |
+| **19 May** | Day 2 | ⚙️ Set up Cloudflare Workers + D1 database locally via Wrangler CLI. Initialized Vite build config with TailwindCSS. Created base project scaffolding for Colleqo. | Cloudflare D1 (serverless SQLite), Wrangler CLI workflow, edge computing basics |
+| **20 May** | Day 3 | 🗄️ Designed DB schema for Colleqo — users, tenants, roles, attendance, timetable tables. Wrote SQL migrations. Set up role-based middleware logic. | Database schema design, multi-tenant architecture pattern, RBAC implementation |
 | **21 May** | Day 4 | 🔐 Built authentication system — login/register endpoints with JWT, role extraction, session management. Integrated `tsconfig.json` for strict TypeScript. | JWT auth flow, TypeScript strict mode, Hono routing patterns |
 | **22 May** | Day 5 | 📱 Started PWA implementation — added `manifest.json`, Service Worker registration, IndexedDB setup for offline queueing. | Progressive Web App fundamentals, Service Workers, offline-first design |
 | **23 May** | Day 6 | 🎨 Built role-specific dashboard UIs — Student, Faculty, Admin views. Integrated Chart.js for attendance progress rings. | Chart.js integration, conditional rendering by role, responsive TailwindCSS grids |
-| **24 May** | Day 7 | 🧪 Testing + bug fixes across CampusOS modules. Fixed offline sync logic — actions queued in IndexedDB now sync on reconnect. Added multi-tenant code system. | Debugging async sync issues, multi-tenant routing via tenant codes |
+| **24 May** | Day 7 | 🧪 Testing + bug fixes across Colleqo modules. Fixed offline sync logic — actions queued in IndexedDB now sync on reconnect. Added multi-tenant code system. | Debugging async sync issues, multi-tenant routing via tenant codes |
 
 ---
 
@@ -106,7 +107,7 @@
 
 | Date | Day | Work Done | Key Learnings |
 |------|-----|-----------|---------------|
-| **25 May** | Day 8 | ✅ CampusOS — completed Hostel & Library modules. Room allocation, book issuance, complaint system. Deployed to Cloudflare Pages (`npm run deploy`). | Cloudflare Pages deployment pipeline, Wrangler production config |
+| **25 May** | Day 8 | ✅ Colleqo — completed Hostel & Library modules. Room allocation, book issuance, complaint system. Deployed to Cloudflare Pages (`npm run deploy`). | Cloudflare Pages deployment pipeline, Wrangler production config |
 | **26 May** | Day 9 | 🏥 New project started: **ContextCare AI**. Designed full system architecture — FastAPI backend, Next.js 14 frontend, MongoDB, WebSocket hub. Studied OCR pipeline requirements. | System architecture design, FastAPI async patterns, clinical NLP basics |
 | **27 May** | Day 10 | 🐍 Built FastAPI backend skeleton — project structure, CORS middleware, health endpoint, Pydantic models for `ExtractedDocument`. Set up Docker MongoDB container. | FastAPI project setup, Docker basics, Pydantic data validation |
 | **28 May** | Day 11 | 🔬 Built OCR pipeline — OpenCV image preprocessor (grayscale, denoise, CLAHE, deskew) → Pytesseract OCR engine → confidence scoring. Integrated with `/api/extract-intel` endpoint. | Computer vision preprocessing, Tesseract OCR, image quality metrics |
@@ -121,12 +122,12 @@
 | Date | Day | Work Done | Key Learnings |
 |------|-----|-----------|---------------|
 | **01 Jun** | Day 15 | 🎨 Built Next.js 14 frontend for ContextCare — App Router setup, dual-state auth form (login + register), route guards on `/doctor` dashboard, localStorage JWT validation. | Next.js App Router, client-side route protection, Tailwind utility composition |
-| **02 Jun** | Day 16 | *(Upcoming)* | |
-| **03 Jun** | Day 17 | *(Upcoming)* | |
-| **04 Jun** | Day 18 | *(Upcoming)* | |
-| **05 Jun** | Day 19 | *(Upcoming)* | |
-| **06 Jun** | Day 20 | *(Upcoming)* | |
-| **07 Jun** | Day 21 | *(Upcoming)* | |
+| **02 Jun** | Day 16 | 🔔 Implemented FCM push notification system — backend FCM integration with graceful degradation, `push_subscriptions` DB table, `dispatchPush()` helper. Auto-triggers on new announcement. Frontend: notification bell with badge, push subscription on login. | FCM Web Push API, Service Worker push event handlers, fan-out notification patterns |
+| **03 Jun** | Day 17 | 💳 Integrated Razorpay payment gateway into Colleqo fees module — create-order endpoint with HMAC-SHA256 signature verification, `payment_transactions` table, mock mode for demo. Student fee page: Pay Now button triggers Razorpay checkout modal, receipt generation. | Razorpay order flow, HMAC signature verification, payment state machines |
+| **04 Jun** | Day 18 | 📱 Built Twilio SMS/WhatsApp alert system — `sendTwilioMessage()` with real `fetch()` to Twilio REST API, auto-triggers on low attendance (<75%) and fee payment confirmation. Alerts admin panel for bulk SMS. User alert preferences per student. | Twilio REST API, Basic Auth with `btoa()`, SMS vs WhatsApp channel routing |
+| **05 Jun** | Day 19 | 📊 Built AI-powered analytics dashboard — rule-based insight engine analyzing attendance trends, at-risk students (risk score formula: `attendance×0.4 + exams×0.4 + fees×0.2`), department performance, fee collection trends. Chart.js line + bar charts. CSV export. | Analytics aggregation queries, risk scoring algorithms, Chart.js multi-dataset |
+| **06 Jun** | Day 20 | 📂 Built bulk CSV import/export system + Parent Portal. CSV import: parse → validate → insert students/faculty with auto-generated passwords. Parent portal: 6-digit link code system, parent↔student linking, tabbed progress view (Attendance/Results/Fees/Timetable), printable progress report. | CSV parsing without external libs, parent-child DB relationships, print CSS |
+| **07 Jun** | Day 21 | 🎨 Major UI upgrade — implemented professional desktop layout (Notion/Linear style): 240px fixed sidebar, 60px header with breadcrumb + user menu, role-based nav, mobile layout preserved via CSS media queries. Rebranded CampusOS → Colleqo. Built SaaS landing page with pricing (₹6,999/₹12,999/₹19,999/month), comparison vs TCS iON/Fedena, FAQ accordion. Deployed to campusos.pages.dev with GitHub Actions CI/CD. | CSS media queries for responsive desktop, Cloudflare Pages CI/CD, SaaS pricing strategy |
 
 ---
 
