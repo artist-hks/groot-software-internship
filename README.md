@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=30&duration=3000&pause=1000&color=00D9FF&center=true&vCenter=true&width=700&lines=MERN+Stack+Internship+%F0%9F%9A%80;Groot+Software+%7C+Hemant+Sharma;18+May+2026+%E2%80%94+04+July+2026" alt="Typing SVG" />
+<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=30&duration=3000&pause=1000&color=00D9FF&center=true&vCenter=true&width=700&lines=MERN+Stack+Internship+%F0%9F%9A%80;Groot+Software+45+Days;Full-Stack+Web+Development" alt="Typing SVG" />
 
 </div>
 
@@ -37,16 +37,22 @@
 
 [![Colleqo](https://img.shields.io/badge/Repo-Colleqo-0D1117?style=for-the-badge&logo=github)](https://github.com/artist-hks/Colleqo)
 [![Live Demo](https://img.shields.io/badge/Live-campusos.pages.dev-4CAF50?style=for-the-badge&logo=cloudflare&logoColor=white)](https://campusos.pages.dev)
-![TypeScript](https://img.shields.io/badge/TypeScript-50%25-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
-![JavaScript](https://img.shields.io/badge/JavaScript-50%25-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-47.1%25-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-44.2%25-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+![HTML](https://img.shields.io/badge/HTML-8.7%25-E34C26?style=for-the-badge&logo=html5&logoColor=white)
 
 **What I Built:**
 - 📱 Progressive Web App (PWA) — installable on iOS, Android, Windows with offline support
 - 🔐 Role-Based Access Control — Student, Faculty, HOD, Admin, Librarian, Hostel Warden dashboards
 - 🏢 Multi-Tenant Architecture — multiple institutions under one deployment via tenant codes
 - 📊 Modules: Attendance, Timetable, Exams, Assignments, Fees, Hostel, Library
+- 💳 Payment Integration (Razorpay) with order verification & HMAC signatures
+- 🔔 FCM Push Notifications + Twilio SMS/WhatsApp alerts
+- 📂 Bulk CSV import/export system for students & faculty
+- 👨‍👩‍👧 Parent Portal with 6-digit link codes
+- 📊 AI-powered analytics dashboard with at-risk scoring
 
-**Tech Stack:** `Hono` · `Cloudflare D1 (SQLite)` · `Cloudflare Workers/Pages` · `Vite` · `TailwindCSS` · `Chart.js`
+**Tech Stack:** `Hono` · `Cloudflare D1 (SQLite)` · `Cloudflare Workers/Pages` · `Vite` · `TailwindCSS` · `Chart.js` · `Razorpay` · `FCM` · `Twilio`
 
 ---
 
@@ -55,8 +61,8 @@
 
 [![ContextCare](https://img.shields.io/badge/Repo-ContextCare-0D1117?style=for-the-badge&logo=github)](https://github.com/artist-hks/ContextCare)
 [![Live Demo](https://img.shields.io/badge/Live-context--care.vercel.app-FF6B6B?style=for-the-badge&logo=vercel)](https://context-care.vercel.app)
-![TypeScript](https://img.shields.io/badge/TypeScript-85.8%25-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
-![Python](https://img.shields.io/badge/Python-9.9%25-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-93.1%25-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-5.4%25-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
 
 **What I Built:**
 - 🔬 OCR Pipeline — OpenCV preprocessing → Pytesseract → spaCy NER extraction
@@ -64,12 +70,32 @@
 - 📄 PDF Report Generation — branded diagnostic PDFs via ReportLab
 - 🔐 JWT Auth System — bcrypt password hashing, 24-hour token sessions
 - 📈 Time-Series FBS Charts — Recharts trend visualizations in live dashboard
+- 🎯 Medical document classification & entity extraction using spaCy
 
 **Tech Stack:** `Next.js 14` · `FastAPI` · `MongoDB` · `Motor` · `Docker` · `Recharts` · `WebSocket` · `PyJWT` · `spaCy` · `OpenCV`
 
 ---
 
-### 3. 💼 Portfolio (Ongoing Upgrade)
+### 3. ✅ TaskFlow — Task Management Tool
+> *Web-based task management with clean UI and seamless workflow*
+
+[![TaskFlow](https://img.shields.io/badge/Repo-TaskFlow-0D1117?style=for-the-badge&logo=github)](https://github.com/artist-hks/TaskFlow)
+![JavaScript](https://img.shields.io/badge/JavaScript-96.6%25-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+![CSS](https://img.shields.io/badge/CSS-2.8%25-1572B6?style=for-the-badge&logo=css3&logoColor=white)
+![HTML](https://img.shields.io/badge/HTML-0.6%25-E34C26?style=for-the-badge&logo=html5&logoColor=white)
+
+**What I Built:**
+- ✏️ Create, update, and manage daily tasks
+- 📋 Clean, intuitive user interface
+- 💾 Persistent storage with localStorage
+- 🎨 Responsive design for all devices
+- ⚡ Vanilla JavaScript (zero framework overhead)
+
+**Tech Stack:** `Vanilla JavaScript` · `HTML5` · `CSS3` · `LocalStorage`
+
+---
+
+### 4. 💼 Portfolio (Ongoing Upgrade)
 > *Personal developer portfolio — continuously improved throughout internship*
 
 [![Portfolio](https://img.shields.io/badge/Repo-hks--portfolio-0D1117?style=for-the-badge&logo=github)](https://github.com/artist-hks/hks-portfolio)
@@ -93,13 +119,13 @@
 
 | Date | Day | Work Done | Key Learnings |
 |------|-----|-----------|---------------|
-| **18 May** | Day 1 | 🔰 Internship kickoff. Environment setup — Node.js, MongoDB, VS Code extensions. Understood project scope and requirements for Colleqo. Studied existing codebase structure. | MERN project structure, monorepo setup, understanding Hono framework for edge workers |
-| **19 May** | Day 2 | ⚙️ Set up Cloudflare Workers + D1 database locally via Wrangler CLI. Initialized Vite build config with TailwindCSS. Created base project scaffolding for Colleqo. | Cloudflare D1 (serverless SQLite), Wrangler CLI workflow, edge computing basics |
-| **20 May** | Day 3 | 🗄️ Designed DB schema for Colleqo — users, tenants, roles, attendance, timetable tables. Wrote SQL migrations. Set up role-based middleware logic. | Database schema design, multi-tenant architecture pattern, RBAC implementation |
-| **21 May** | Day 4 | 🔐 Built authentication system — login/register endpoints with JWT, role extraction, session management. Integrated `tsconfig.json` for strict TypeScript. | JWT auth flow, TypeScript strict mode, Hono routing patterns |
-| **22 May** | Day 5 | 📱 Started PWA implementation — added `manifest.json`, Service Worker registration, IndexedDB setup for offline queueing. | Progressive Web App fundamentals, Service Workers, offline-first design |
-| **23 May** | Day 6 | 🎨 Built role-specific dashboard UIs — Student, Faculty, Admin views. Integrated Chart.js for attendance progress rings. | Chart.js integration, conditional rendering by role, responsive TailwindCSS grids |
-| **24 May** | Day 7 | 🧪 Testing + bug fixes across Colleqo modules. Fixed offline sync logic — actions queued in IndexedDB now sync on reconnect. Added multi-tenant code system. | Debugging async sync issues, multi-tenant routing via tenant codes |
+| **18 May** | Day 1 | 🔰 Internship kickoff. Environment setup — Node.js, MongoDB, VS Code extensions. Understood project scope and requirements for Colleqo. Studied existing codebase structure. | Project scoping, dev environment best practices |
+| **19 May** | Day 2 | ⚙️ Set up Cloudflare Workers + D1 database locally via Wrangler CLI. Initialized Vite build config with TailwindCSS. Created base project scaffolding for Colleqo. | Cloudflare ecosystem, Wrangler local dev, Vite setup |
+| **20 May** | Day 3 | 🗄️ Designed DB schema for Colleqo — users, tenants, roles, attendance, timetable tables. Wrote SQL migrations. Set up role-based middleware logic. | Database schema design, multi-tenant patterns, SQLite |
+| **21 May** | Day 4 | 🔐 Built authentication system — login/register endpoints with JWT, role extraction, session management. Integrated `tsconfig.json` for strict TypeScript. | JWT auth flow, password hashing, TypeScript strict mode |
+| **22 May** | Day 5 | 📱 Started PWA implementation — added `manifest.json`, Service Worker registration, IndexedDB setup for offline queueing. | Progressive Web App fundamentals, Service Workers, offline storage |
+| **23 May** | Day 6 | 🎨 Built role-specific dashboard UIs — Student, Faculty, Admin views. Integrated Chart.js for attendance progress rings. | Chart.js integration, conditional rendering based on roles |
+| **24 May** | Day 7 | 🧪 Testing + bug fixes across Colleqo modules. Fixed offline sync logic — actions queued in IndexedDB now sync on reconnect. Added multi-tenant code system. | Debugging offline flows, IndexedDB sync patterns |
 
 ---
 
@@ -107,27 +133,27 @@
 
 | Date | Day | Work Done | Key Learnings |
 |------|-----|-----------|---------------|
-| **25 May** | Day 8 | ✅ Colleqo — completed Hostel & Library modules. Room allocation, book issuance, complaint system. Deployed to Cloudflare Pages (`npm run deploy`). | Cloudflare Pages deployment pipeline, Wrangler production config |
-| **26 May** | Day 9 | 🏥 New project started: **ContextCare AI**. Designed full system architecture — FastAPI backend, Next.js 14 frontend, MongoDB, WebSocket hub. Studied OCR pipeline requirements. | System architecture design, FastAPI async patterns, clinical NLP basics |
-| **27 May** | Day 10 | 🐍 Built FastAPI backend skeleton — project structure, CORS middleware, health endpoint, Pydantic models for `ExtractedDocument`. Set up Docker MongoDB container. | FastAPI project setup, Docker basics, Pydantic data validation |
-| **28 May** | Day 11 | 🔬 Built OCR pipeline — OpenCV image preprocessor (grayscale, denoise, CLAHE, deskew) → Pytesseract OCR engine → confidence scoring. Integrated with `/api/extract-intel` endpoint. | Computer vision preprocessing, Tesseract OCR, image quality metrics |
-| **29 May** | Day 12 | 🧠 Integrated spaCy NER for medical entity extraction — document classification, date normalization, metric regex, medication extraction. Built `BaseMedicalExtractor` abstract interface (pluggable design). | spaCy rule-based NER, abstract base classes in Python, medical document parsing |
-| **30 May** | Day 13 | ⚡ Built WebSocket hub — `ConnectionManager` class broadcasting `ExtractedDocument` payloads to all connected doctor dashboards. Implemented `/ws/doctor-dashboard` endpoint. | WebSocket in FastAPI, broadcast patterns, real-time data streaming |
-| **31 May** | Day 14 | 🔐 Completed auth system for ContextCare — bcrypt password hashing, PyJWT token generation, `HTTPBearer` FastAPI dependency injection. Built `/api/auth/register` and `/api/auth/login`. | Bcrypt salt rounds, JWT with expiry windows, FastAPI security dependencies |
+| **25 May** | Day 8 | ✅ Colleqo — completed Hostel & Library modules. Room allocation, book issuance, complaint system. Deployed to Cloudflare Pages (`npm run deploy`). | Cloudflare Pages deployment, production PWA checklist |
+| **26 May** | Day 9 | 🏥 New project started: **ContextCare AI**. Designed full system architecture — FastAPI backend, Next.js 14 frontend, MongoDB, WebSocket hub. Studied OCR pipeline requirements. | System architecture design, medical document workflows |
+| **27 May** | Day 10 | 🐍 Built FastAPI backend skeleton — project structure, CORS middleware, health endpoint, Pydantic models for `ExtractedDocument`. Set up Docker MongoDB container. | FastAPI async patterns, Docker compose, Pydantic validation |
+| **28 May** | Day 11 | 🔬 Built OCR pipeline — OpenCV image preprocessor (grayscale, denoise, CLAHE, deskew) → Pytesseract OCR engine → confidence scoring. Integrated with `/api/extract-document`. | Image preprocessing, OCR accuracy tuning, confidence thresholds |
+| **29 May** | Day 12 | 🧠 Integrated spaCy NER for medical entity extraction — document classification, date normalization, metric regex, medication extraction. Built `BaseMedicalExtractor` class. | spaCy NER, medical NLP, regex patterns for clinical data |
+| **30 May** | Day 13 | ⚡ Built WebSocket hub — `ConnectionManager` class broadcasting `ExtractedDocument` payloads to all connected doctor dashboards. Implemented `/ws/doctor-dashboard` endpoint. | WebSocket patterns in FastAPI, broadcast messaging |
+| **31 May** | Day 14 | 🔐 Completed auth system for ContextCare — bcrypt password hashing, PyJWT token generation, `HTTPBearer` FastAPI dependency injection. Built `/api/auth/register` and `/api/auth/login`. | bcrypt security, JWT token refresh strategies |
 
 ---
 
-### 📆 Week 3 — June 1 onwards *(in progress)*
+### 📆 Week 3 — June 1–7, 2026
 
 | Date | Day | Work Done | Key Learnings |
 |------|-----|-----------|---------------|
-| **01 Jun** | Day 15 | 🎨 Built Next.js 14 frontend for ContextCare — App Router setup, dual-state auth form (login + register), route guards on `/doctor` dashboard, localStorage JWT validation. | Next.js App Router, client-side route protection, Tailwind utility composition |
-| **02 Jun** | Day 16 | 🔔 Implemented FCM push notification system — backend FCM integration with graceful degradation, `push_subscriptions` DB table, `dispatchPush()` helper. Auto-triggers on new announcement. Frontend: notification bell with badge, push subscription on login. | FCM Web Push API, Service Worker push event handlers, fan-out notification patterns |
-| **03 Jun** | Day 17 | 💳 Integrated Razorpay payment gateway into Colleqo fees module — create-order endpoint with HMAC-SHA256 signature verification, `payment_transactions` table, mock mode for demo. Student fee page: Pay Now button triggers Razorpay checkout modal, receipt generation. | Razorpay order flow, HMAC signature verification, payment state machines |
-| **04 Jun** | Day 18 | 📱 Built Twilio SMS/WhatsApp alert system — `sendTwilioMessage()` with real `fetch()` to Twilio REST API, auto-triggers on low attendance (<75%) and fee payment confirmation. Alerts admin panel for bulk SMS. User alert preferences per student. | Twilio REST API, Basic Auth with `btoa()`, SMS vs WhatsApp channel routing |
-| **05 Jun** | Day 19 | 📊 Built AI-powered analytics dashboard — rule-based insight engine analyzing attendance trends, at-risk students (risk score formula: `attendance×0.4 + exams×0.4 + fees×0.2`), department performance, fee collection trends. Chart.js line + bar charts. CSV export. | Analytics aggregation queries, risk scoring algorithms, Chart.js multi-dataset |
-| **06 Jun** | Day 20 | 📂 Built bulk CSV import/export system + Parent Portal. CSV import: parse → validate → insert students/faculty with auto-generated passwords. Parent portal: 6-digit link code system, parent↔student linking, tabbed progress view (Attendance/Results/Fees/Timetable), printable progress report. | CSV parsing without external libs, parent-child DB relationships, print CSS |
-| **07 Jun** | Day 21 | 🎨 Major UI upgrade — implemented professional desktop layout (Notion/Linear style): 240px fixed sidebar, 60px header with breadcrumb + user menu, role-based nav, mobile layout preserved via CSS media queries. Rebranded CampusOS → Colleqo. Built SaaS landing page with pricing (₹6,999/₹12,999/₹19,999/month), comparison vs TCS iON/Fedena, FAQ accordion. Deployed to campusos.pages.dev with GitHub Actions CI/CD. | CSS media queries for responsive desktop, Cloudflare Pages CI/CD, SaaS pricing strategy |
+| **01 Jun** | Day 15 | 🎨 Built Next.js 14 frontend for ContextCare — App Router setup, dual-state auth form (login + register), route guards on `/doctor` dashboard, localStorage JWT validation. PDF download button. | Next.js 14 App Router, client-side route protection, localStorage timing in SSR |
+| **02 Jun** | Day 16 | 🔔 Implemented FCM push notification system — backend FCM integration with graceful degradation, `push_subscriptions` DB table, `dispatchPush()` helper. Auto-triggers on announcement creation. | Firebase Cloud Messaging, Service Worker push events, upsert patterns |
+| **03 Jun** | Day 17 | 💳 Integrated Razorpay payment gateway into Colleqo fees module — create-order endpoint with HMAC-SHA256 signature verification, `payment_transactions` table, mock mode for local dev. | Razorpay integration, crypto.subtle HMAC, payment order flow |
+| **04 Jun** | Day 18 | 📱 Built Twilio SMS/WhatsApp alert system — `sendTwilioMessage()` with real `fetch()` to Twilio REST API, auto-triggers on low attendance (<75%) and fee payment confirmations. | Twilio REST API, URLSearchParams encoding, multi-channel messaging |
+| **05 Jun** | Day 19 | 📊 Built AI-powered analytics dashboard — rule-based insight engine analyzing attendance trends, at-risk students (risk score: `attendance×0.4 + exams×0.4 + fees×0.2`). CSV export with no server round-trip. | SQL aggregations, risk scoring algorithms, client-side CSV generation |
+| **06 Jun** | Day 20 | 📂 Built bulk CSV import/export system + Parent Portal. CSV import: parse → validate → insert students/faculty with auto-generated passwords. Parent portal: 6-digit link codes (24-hour TTL). | Character-by-character CSV parsing, parent-child linking model, token expiry |
+| **07 Jun** | Day 21 | 🎨 Major UI upgrade — implemented professional desktop layout (Notion/Linear style): 240px fixed sidebar, 60px header with breadcrumb + user menu, role-based nav. Rebranded to Colleqo. SaaS landing page. | CSS Grid layout patterns, mobile-responsive hamburger menu, print CSS |
 
 ---
 
@@ -173,7 +199,7 @@
 
 ---
 
-### 📆 Final Days — June 29 – July 1, 2026
+### 📆 Final Days — June 29 – July 4, 2026
 
 | Date | Day | Work Done | Key Learnings |
 |------|-----|-----------|---------------|
@@ -191,12 +217,13 @@ FRONTEND
 ├── TypeScript                     → Type safety, interfaces, generics
 ├── TailwindCSS                    → Utility-first styling, responsive design
 ├── Recharts / Chart.js            → Data visualization, time-series charts
+├── Vanilla JavaScript             → DOM manipulation, localStorage, IndexedDB
 └── WebSocket (Browser API)        → Real-time event subscription
 
 BACKEND
 ├── Node.js + Express              → REST API basics
+├── Hono                           → Edge-ready web framework (Cloudflare Workers)
 ├── FastAPI (Python)               → Async APIs, dependency injection
-├── Hono                           → Edge-ready web framework
 ├── JWT + bcrypt                   → Auth, session management
 └── WebSocket (FastAPI)            → Real-time broadcasting
 
@@ -210,6 +237,11 @@ AI / ML / NLP
 ├── Pytesseract                    → OCR text extraction
 ├── spaCy                          → Named Entity Recognition (NER)
 └── ReportLab                      → PDF generation
+
+INTEGRATIONS
+├── Firebase Cloud Messaging       → Push notifications
+├── Razorpay                       → Payment gateway
+├── Twilio                         → SMS & WhatsApp messaging
 
 DEVOPS
 ├── Docker                         → Container management
@@ -226,12 +258,13 @@ DEVOPS
 
 | Category | Skills |
 |----------|--------|
-| **Full-Stack Dev** | MERN architecture, REST APIs, WebSockets, PWA |
-| **Backend** | FastAPI, Hono, JWT auth, async programming |
-| **Database** | MongoDB schema design, SQL migrations, multi-tenant DB |
-| **AI/ML Integration** | OCR pipeline, NLP/NER, medical document parsing |
-| **DevOps** | Docker, Cloudflare deployment, Render, Vercel |
-| **Engineering Practices** | Abstract interfaces, modular code, system architecture |
+| **Full-Stack Dev** | MERN architecture, REST APIs, WebSockets, PWA, system design |
+| **Backend** | FastAPI, Hono, JWT auth, async programming, API design |
+| **Database** | MongoDB schema design, SQL migrations, multi-tenant DB, query optimization |
+| **AI/ML Integration** | OCR pipeline, NLP/NER, medical document parsing, image preprocessing |
+| **Integrations** | FCM, Razorpay, Twilio, payment verification, real-time messaging |
+| **DevOps** | Docker, Cloudflare deployment, Render, Vercel, CI/CD basics |
+| **Engineering Practices** | Abstract interfaces, modular code, system architecture, testing patterns |
 
 </div>
 
@@ -245,6 +278,7 @@ DEVOPS
 [![Portfolio](https://img.shields.io/badge/Portfolio-artist--hks.vercel.app-00D9FF?style=for-the-badge&logo=vercel)](https://artist-hks.vercel.app)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-artisthks-0A66C2?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/in/artisthks)
 [![ContextCare Live](https://img.shields.io/badge/ContextCare-Live%20Demo-FF6B6B?style=for-the-badge&logo=react)](https://context-care.vercel.app)
+[![Colleqo Live](https://img.shields.io/badge/Colleqo-Live%20Demo-4CAF50?style=for-the-badge&logo=cloudflare)](https://campusos.pages.dev)
 
 </div>
 
