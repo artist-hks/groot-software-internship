@@ -76,26 +76,49 @@
 
 ---
 
-### 3. ✅ TaskFlow — Task Management Tool
-> *Web-based task management with clean UI and seamless workflow*
+### 3. ✅ TaskFlow — AI-Powered Kanban Task Manager
+> *Full-stack MERN kanban board with Gemini-powered effort estimation*
 
 [![TaskFlow](https://img.shields.io/badge/Repo-TaskFlow-0D1117?style=for-the-badge&logo=github)](https://github.com/artist-hks/TaskFlow)
+[![Live Demo](https://img.shields.io/badge/Live-taskflow--hks.vercel.app-4CAF50?style=for-the-badge&logo=vercel)](https://taskflow-hks.vercel.app)
 ![JavaScript](https://img.shields.io/badge/JavaScript-96.6%25-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
 ![CSS](https://img.shields.io/badge/CSS-2.8%25-1572B6?style=for-the-badge&logo=css3&logoColor=white)
 ![HTML](https://img.shields.io/badge/HTML-0.6%25-E34C26?style=for-the-badge&logo=html5&logoColor=white)
 
 **What I Built:**
-- ✏️ Create, update, and manage daily tasks
-- 📋 Clean, intuitive user interface
-- 💾 Persistent storage with localStorage
-- 🎨 Responsive design for all devices
-- ⚡ Vanilla JavaScript (zero framework overhead)
+- 🗂️ Kanban boards — drag-and-drop tasks across To Do / In Progress / Done using `@dnd-kit`
+- ✨ AI Task Estimation — Google Gemini 2.5 Flash predicts task effort & suggests due dates from the task description, with a deterministic offline fallback
+- 🔐 Full auth system — JWT + bcrypt password hashing, protected routes
+- 📊 Dashboard analytics — status & priority breakdowns via Recharts (donut + bar charts)
+- 🌗 Dark mode — class-based theming across the entire app
+- ⚙️ REST API — Node.js/Express + MongoDB/Mongoose, validated with `express-validator`
 
-**Tech Stack:** `Vanilla JavaScript` · `HTML5` · `CSS3` · `LocalStorage`
+**Tech Stack:** `React 18 (Vite)` · `Node.js/Express` · `MongoDB` · `Mongoose` · `TailwindCSS` · `Google Gemini API` · `@dnd-kit` · `Recharts` · `JWT`
 
 ---
 
-### 4. 💼 Portfolio (Ongoing Upgrade)
+### 4. 🌾 CropCortex — AgTech Digital Assistant
+> *Mobile-first AI farming assistant for Indian farmers — multilingual & offline-first*
+
+[![CropCortex](https://img.shields.io/badge/Repo-CropCortex-0D1117?style=for-the-badge&logo=github)](https://github.com/artist-hks/CropCortex)
+[![Live Demo](https://img.shields.io/badge/Live-cropcortex--app.pages.dev-4CAF50?style=for-the-badge&logo=cloudflare&logoColor=white)](https://cropcortex-app.pages.dev)
+![TypeScript](https://img.shields.io/badge/TypeScript-77%25-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![HTML](https://img.shields.io/badge/HTML-22%25-E34C26?style=for-the-badge&logo=html5&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-1%25-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+
+**What I Built:**
+- 👨‍⚕️ Crop Doctor — photo-based AI disease diagnosis with organic + chemical treatment suggestions
+- 📈 Mandi price intelligence — live mandi rates, 30-day trend charts, custom price alerts
+- 🛰️ Satellite field monitoring — NDVI imagery to flag crop stress before it's visible to the eye
+- 🗓️ AI crop advisory — hyper-local weekly task plans from crop stage + live weather
+- 🌍 Multilingual UI — Hindi, Marathi, Tamil, Telugu support, built mobile-first for India
+- 📶 Offline-first — core features work with no network, background sync on reconnect
+
+**Tech Stack:** `React Native + Expo` · `Expo Router` · `Zustand` · `Hono` · `Cloudflare Workers/Pages` · `Wrangler`
+
+---
+
+### 5. 💼 Portfolio (Ongoing Upgrade)
 > *Personal developer portfolio — continuously improved throughout internship*
 
 [![Portfolio](https://img.shields.io/badge/Repo-hks--portfolio-0D1117?style=for-the-badge&logo=github)](https://github.com/artist-hks/hks-portfolio)
@@ -157,44 +180,44 @@
 
 ---
 
-### 📆 Week 4 — June 8–14, 2026 *(planned)*
+### 📆 Week 4 — June 8–14, 2026
 
 | Date | Day | Work Done | Key Learnings |
 |------|-----|-----------|---------------|
-| **08 Jun** | Day 22 | *(Upcoming)* | |
-| **09 Jun** | Day 23 | *(Upcoming)* | |
-| **10 Jun** | Day 24 | *(Upcoming)* | |
-| **11 Jun** | Day 25 | *(Upcoming)* | |
-| **12 Jun** | Day 26 | *(Upcoming)* | |
-| **13 Jun** | Day 27 | *(Upcoming)* | |
-| **14 Jun** | Day 28 | *(Upcoming)* | |
+| **08 Jun** | Day 22 | 🧪 Colleqo — regression-tested the Week 3 desktop UI overhaul (sidebar, breadcrumb, role-based nav) across all roles. Fixed minor responsive bugs on tablet breakpoints. | Cross-role UI testing, responsive breakpoint debugging |
+| **09 Jun** | Day 23 | 📋 Colleqo — triaged bug reports from the new SaaS landing page & pricing tiers. Reviewed CropCortex (personal AgTech side-project) codebase to write up its architecture docs. | Bug triage workflow, documenting an existing Hono/Cloudflare backend |
+| **10 Jun** | Day 24 | 🎨 Colleqo — full logo rebrand: replaced every logo with `colleqo_logo.svg` app-wide, restructured README. CropCortex — fixed README formatting in the system architecture section. | Brand asset rollout across a multi-screen app, README structuring |
+| **11 Jun** | Day 25 | 🔲 Colleqo — designed the QR-based attendance flow: backend endpoint contracts for session creation + scan verification, ahead of implementation. | QR attendance system design, session-token patterns |
+| **12 Jun** | Day 26 | ✅ Colleqo — shipped QR attendance: backend endpoints + in-session QR code image display. Added a proprietary license to the repo. | QR code generation/display in-app, licensing a proprietary codebase |
+| **13 Jun** | Day 27 | 🧪 Colleqo — end-to-end testing of the new QR attendance flow; fixed edge cases (duplicate scans, expired sessions). | Edge-case testing for time-bound tokens |
+| **14 Jun** | Day 28 | 📚 Placement prep — DSA practice + resume refinement alongside Week 4 wrap-up on Colleqo. | Balancing internship delivery with placement prep |
 
 ---
 
-### 📆 Week 5 — June 15–21, 2026 *(planned)*
+### 📆 Week 5 — June 15–21, 2026
 
 | Date | Day | Work Done | Key Learnings |
 |------|-----|-----------|---------------|
-| **15 Jun** | Day 29 | *(Upcoming)* | |
-| **16 Jun** | Day 30 | *(Upcoming)* | |
-| **17 Jun** | Day 31 | *(Upcoming)* | |
-| **18 Jun** | Day 32 | *(Upcoming)* | |
-| **19 Jun** | Day 33 | *(Upcoming)* | |
-| **20 Jun** | Day 34 | *(Upcoming)* | |
-| **21 Jun** | Day 35 | *(Upcoming)* | |
+| **15 Jun** | Day 29 | 🎨 Colleqo — planned the Apple-style mobile sidebar redesign + a security pass (XSS escaping, login guards) ahead of the Week 5 push. | Planning a UI redesign + security checklist for auth-gated nav |
+| **16 Jun** | Day 30 | 📱 Colleqo — shipped Apple-style sidebar animation, fixed the QR scanner bug, seeded parent portal data. Fixed bottom-nav-breaks-after-sidebar-close + sidebar-stuck-on-logout bugs. Added XSS escaping and sidebar login guards. Redesigned mobile sidebar to the Colleqo indigo palette. | CSS animation timing, defensive state resets on logout, XSS-safe rendering |
+| **17 Jun** | Day 31 | 🚀 CropCortex — Cloudflare Pages deployment: added `fix-dist.js` to work around Wrangler's hidden-folder ignore rules for the Expo web export. Polished README with live deployment links. | Cloudflare Pages + Expo web export quirks, Wrangler ignore-rule workarounds |
+| **18 Jun** | Day 32 | 🏥 ContextCare — prepped production deployment: Railway config with `DATABASE_URL`, an auto-seed script for free-tier hosting, added the live demo URL to the README. | Railway deployment config, free-tier DB seeding strategy |
+| **19 Jun** | Day 33 | 📝 ContextCare — full README overhaul: fixed a duplicate title, replaced Unicode ASCII art with plain ASCII for consistent cross-platform rendering, restructured into a professional layout. | Cross-platform terminal rendering quirks, technical writing for a production README |
+| **20 Jun** | Day 34 | 🔧 ContextCare — repo housekeeping and documentation upkeep; verified the live deployment was stable end-to-end. | Maintaining repo hygiene on a shipped project |
+| **21 Jun** | Day 35 | ✅ Wrapped Week 5 with three live, deployed projects running in parallel — Colleqo, ContextCare, and CropCortex. Final ContextCare housekeeping pass. | Managing multiple live deployments simultaneously |
 
 ---
 
-### 📆 Week 6 — June 22–28, 2026 *(planned)*
+### 📆 Week 6 — June 22–28, 2026
 
 | Date | Day | Work Done | Key Learnings |
 |------|-----|-----------|---------------|
-| **22 Jun** | Day 36 | *(Upcoming)* | |
-| **23 Jun** | Day 37 | *(Upcoming)* | |
-| **24 Jun** | Day 38 | *(Upcoming)* | |
-| **25 Jun** | Day 39 | *(Upcoming)* | |
-| **26 Jun** | Day 40 | *(Upcoming)* | |
-| **27 Jun** | Day 41 | *(Upcoming)* | |
+| **22 Jun** | Day 36 | 📝 ContextCare — final documentation pass to keep the README and repo activity current. | Long-term repo maintenance habits |
+| **23 Jun** | Day 37 | 🔍 ContextCare — repo cleanup, re-verified live deployment stability. | Post-launch monitoring on a side project |
+| **24 Jun** | Day 38 | ✅ Built TaskFlow — a full-stack MERN kanban app from scratch: React 18 + Vite client, Express/MongoDB backend, JWT auth, drag-and-drop boards with `@dnd-kit`, Recharts analytics, and Google Gemini 2.5 Flash for AI task-effort estimation. Shipped to Vercel (frontend) + Render (backend); fixed Gemini API key URL-encoding, React Router 404s on refresh, and dark-mode contrast issues the same day. | Full MERN app in a single sprint, Gemini API integration, SPA routing on Vercel, dark-mode contrast tuning |
+| **25 Jun** | Day 39 | 🧠 Did a full code walkthrough of TaskFlow — auth flow, the AI estimation service, and the Kanban drag-and-drop state — to be able to explain every part confidently. | Explaining AI-assisted code with the same depth as hand-written code |
+| **26 Jun** | Day 40 | 📚 Continued placement prep (mock interview practice, DSA revision) alongside light Colleqo maintenance. | Interview communication, time-boxing prep across multiple goals |
+| **27 Jun** | Day 41 | 🗂️ Internship documentation — updated this work log and refreshed READMEs across Colleqo, ContextCare, CropCortex, and TaskFlow for the placement portfolio. | Technical documentation as part of a portfolio narrative |
 | **28 Jun** | Day 42 | *(Upcoming)* | |
 
 ---
@@ -217,6 +240,8 @@ FRONTEND
 ├── TypeScript                     → Type safety, interfaces, generics
 ├── TailwindCSS                    → Utility-first styling, responsive design
 ├── Recharts / Chart.js            → Data visualization, time-series charts
+├── React Native + Expo            → Cross-platform mobile (Android/iOS/Web)
+├── Zustand                        → Lightweight global state management
 ├── Vanilla JavaScript             → DOM manipulation, localStorage, IndexedDB
 └── WebSocket (Browser API)        → Real-time event subscription
 
@@ -228,7 +253,7 @@ BACKEND
 └── WebSocket (FastAPI)            → Real-time broadcasting
 
 DATABASE
-├── MongoDB + Motor                → Document store, async I/O
+├── MongoDB + Motor/Mongoose       → Document store, async I/O, ODM modeling
 ├── Cloudflare D1 (SQLite)         → Serverless relational DB
 └── IndexedDB                      → Client-side offline storage
 
@@ -236,6 +261,8 @@ AI / ML / NLP
 ├── OpenCV                         → Image preprocessing pipeline
 ├── Pytesseract                    → OCR text extraction
 ├── spaCy                          → Named Entity Recognition (NER)
+├── Google Gemini API              → AI task-effort estimation (TaskFlow)
+├── NDVI Satellite Imagery         → Crop stress detection (CropCortex)
 └── ReportLab                      → PDF generation
 
 INTEGRATIONS
@@ -259,9 +286,10 @@ DEVOPS
 | Category | Skills |
 |----------|--------|
 | **Full-Stack Dev** | MERN architecture, REST APIs, WebSockets, PWA, system design |
+| **Mobile Dev** | React Native, Expo Router, Zustand state management, offline-first design |
 | **Backend** | FastAPI, Hono, JWT auth, async programming, API design |
 | **Database** | MongoDB schema design, SQL migrations, multi-tenant DB, query optimization |
-| **AI/ML Integration** | OCR pipeline, NLP/NER, medical document parsing, image preprocessing |
+| **AI/ML Integration** | OCR pipeline, NLP/NER, Gemini API task estimation, NDVI satellite imagery, image preprocessing |
 | **Integrations** | FCM, Razorpay, Twilio, payment verification, real-time messaging |
 | **DevOps** | Docker, Cloudflare deployment, Render, Vercel, CI/CD basics |
 | **Engineering Practices** | Abstract interfaces, modular code, system architecture, testing patterns |
@@ -279,6 +307,8 @@ DEVOPS
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-artisthks-0A66C2?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/in/artisthks)
 [![ContextCare Live](https://img.shields.io/badge/ContextCare-Live%20Demo-FF6B6B?style=for-the-badge&logo=react)](https://context-care.vercel.app)
 [![Colleqo Live](https://img.shields.io/badge/Colleqo-Live%20Demo-4CAF50?style=for-the-badge&logo=cloudflare)](https://campusos.pages.dev)
+[![CropCortex Live](https://img.shields.io/badge/CropCortex-Live%20Demo-00D9FF?style=for-the-badge&logo=cloudflare)](https://cropcortex-app.pages.dev)
+[![TaskFlow Live](https://img.shields.io/badge/TaskFlow-Live%20Demo-B45309?style=for-the-badge&logo=vercel)](https://taskflow-hks.vercel.app)
 
 </div>
 
