@@ -11,140 +11,64 @@ Wrap up ContextCare AI with a fully wired Next.js 14 frontend (Day 15), then shi
 
 ---
 
-## Day 15 — 01 June 2026 · ContextCare AI — Next.js 14 Frontend
+## Day 15 — 01 June 2026 · ContextCare AI — Patient Flow + Doctor Dashboard
 
 ### What I Did
-Built the complete Next.js 14 App Router frontend for ContextCare AI — the layer doctors actually interact with. This connects to the FastAPI backend built in Week 2 via REST (auth, scan history) and WebSocket (live scan feed).
+Built out the rest of the Next.js 14 app — the same project from Week 2, since the API routes, the Socket.IO server, and the UI all live in one codebase. No separate frontend repo or REST client config needed; pages just call their own `/api/...` routes.
 
-Key pieces: dual-state auth form that flips between login and register without a page reload; a route guard on the `/doctor` dashboard that reads `localStorage` for the JWT and redirects to `/` if missing (preventing flash of protected content with a pre-render null check); and a live WebSocket hook that subscribes to `ws://…/ws/doctor-dashboard?doctor_id=<id>` and pushes incoming `ExtractedDocument` payloads into React state, triggering instant re-renders in the FBS Recharts trend chart.
+**Patient side:** a multi-step `PatientUploadFlow` (Upload → Processing → Review → Pair) — compress the photo client-side with `browser-image-compression` before it ever leaves the phone, POST it to `/api/scans/extract`, let the patient edit any metric the OCR misread, then `PairStep` collects name + phone and the doctor's QR/pairing code and submits to `/api/scans/pair`.
 
-I also wired up the PDF download button on each scan card — it calls `GET /api/reports/{scan_id}/pdf` with the JWT header and streams the response as a blob download, keeping everything inside the browser without a new tab.
+**Doctor side:** a `QrPairOverlay` that fetches `/api/doctor/qr` and renders the pairing QR right on the dashboard, and a dashboard page that opens a Socket.IO client connection, joins the doctor's own room, and listens for `scan:created` events to update the patient list and trend charts live — with a 5-second polling fallback if the socket ever disconnects, so the feature degrades instead of breaking.
 
 ### Key Code / Implementation
 
 ```typescript
-// app/page.tsx — dual-state auth form
-'use client';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+// components/QrPairOverlay.tsx — doctor's live pairing QR
+export default function QrPairOverlay({ open, onClose, pairedPatientName }: Props) {
+  const [qr, setQr] = useState<{ code: string; qrDataUrl: string } | null>(null);
 
-export default function AuthPage() {
-  const [mode, setMode] = useState<'login' | 'register'>('login');
-  const [email, setEmail]       = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName]         = useState('');
-  const [error, setError]       = useState('');
-  const router = useRouter();
+  useEffect(() => {
+    if (!open) return;
+    fetch("/api/doctor/qr")
+      .then((r) => r.json())
+      .then((d) => (d.error ? setError(d.error) : setQr(d)));
+  }, [open]);
 
-  async function handleSubmit() {
-    setError('');
-    const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/register';
-    const body = mode === 'login' ? { email, password } : { email, password, name };
-
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-
-    if (!res.ok) {
-      const data = await res.json();
-      setError(data.detail ?? 'Something went wrong');
-      return;
-    }
-
-    const data = await res.json();
-    localStorage.setItem('cc_token', data.token);
-    localStorage.setItem('cc_doctor_id', data.doctor_id);
-    router.push('/doctor');
-  }
-
-  return (
-    <main className="min-h-screen flex items-center justify-center bg-gray-950">
-      <div className="w-full max-w-sm bg-gray-900 rounded-2xl p-8 shadow-xl">
-        <h1 className="text-2xl font-bold text-white mb-6">ContextCare AI</h1>
-        {mode === 'register' && (
-          <input className="input" placeholder="Full Name"
-            value={name} onChange={e => setName(e.target.value)} />
-        )}
-        <input className="input" placeholder="Email"
-          value={email} onChange={e => setEmail(e.target.value)} />
-        <input className="input" type="password" placeholder="Password"
-          value={password} onChange={e => setPassword(e.target.value)} />
-        {error && <p className="text-red-400 text-sm">{error}</p>}
-        <button onClick={handleSubmit} className="btn-primary w-full mt-4">
-          {mode === 'login' ? 'Sign In' : 'Create Account'}
-        </button>
-        <p className="text-gray-500 text-sm text-center mt-4">
-          {mode === 'login' ? "Don't have an account? " : 'Already registered? '}
-          <button onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
-            className="text-cyan-400 underline">
-            {mode === 'login' ? 'Register' : 'Login'}
-          </button>
-        </p>
-      </div>
-    </main>
-  );
+  // ...renders qr.qrDataUrl as an <img>, swaps to a success state
+  // once `pairedPatientName` is set by the socket handler below.
 }
 ```
 
 ```typescript
-// app/doctor/page.tsx — route guard + WebSocket live feed
-'use client';
-import { useEffect, useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { ExtractedDocument } from '@/types';
-import ScanCard from '@/components/ScanCard';
-import FBSChart from '@/components/FBSChart';
+// app/doctor/dashboard/page.tsx — Socket.IO client + polling fallback
+const socket = io({ path: "/socket.io", transports: ["websocket", "polling"] });
 
-export default function DoctorDashboard() {
-  const router = useRouter();
-  const [token, setToken]   = useState<string | null>(null);
-  const [scans, setScans]   = useState<ExtractedDocument[]>([]);
-  const wsRef               = useRef<WebSocket | null>(null);
+socket.on("connect", () => {
+  setConnected(true);
+  socket.emit("join", doctor.id);
+  if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
+});
 
-  useEffect(() => {
-    const t  = localStorage.getItem('cc_token');
-    const id = localStorage.getItem('cc_doctor_id');
-    if (!t || !id) { router.replace('/'); return; }
-    setToken(t);
+socket.on("disconnect", () => {
+  setConnected(false);
+  // Never let the feature silently die — fall back to polling.
+  if (!pollRef.current) pollRef.current = setInterval(loadPatients, 5000);
+});
 
-    // Load scan history
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/scans`, {
-      headers: { Authorization: `Bearer ${t}` },
-    }).then(r => r.json()).then(setScans);
+socket.on("scan:created", (payload) => {
+  loadPatients();
+  if (payload.patient?.id === selectedIdRef.current) loadDetail(payload.patient.id);
+  if (pairOpenRef.current) setJustPaired(payload.patient?.name);
+});
 
-    // Subscribe to live feed
-    wsRef.current = new WebSocket(
-      `${process.env.NEXT_PUBLIC_WS_URL}/ws/doctor-dashboard?doctor_id=${id}`
-    );
-    wsRef.current.onmessage = (e) => {
-      const doc: ExtractedDocument = JSON.parse(e.data);
-      setScans(prev => [doc, ...prev]);
-    };
-
-    return () => wsRef.current?.close();
-  }, []);
-
-  if (!token) return null; // prevents flash of protected content
-
-  return (
-    <div className="min-h-screen bg-gray-950 text-white p-6">
-      <h1 className="text-xl font-bold mb-4">Live Patient Feed</h1>
-      <FBSChart scans={scans} />
-      <div className="grid gap-4 mt-6">
-        {scans.map((scan, i) => <ScanCard key={i} scan={scan} token={token} />)}
-      </div>
-    </div>
-  );
-}
+// Heartbeat every 30s so dead sockets don't sit silently connected.
+heartbeatRef.current = setInterval(() => socket.emit("ping:heartbeat"), 30000);
 ```
 
 ### Key Learnings
-- `localStorage` is not available during SSR — always read it inside `useEffect`, never at module scope in Next.js App Router
-- Returning `null` before the token state is set prevents a flash of protected dashboard content before the redirect fires
-- WebSocket cleanup in the `useEffect` return function is essential — without it, `StrictMode` double-mount creates two socket connections
-- `new WebSocket(url)` uses the browser's native API; no extra library needed for simple subscribe-only feeds
+- Compressing the image client-side (`browser-image-compression`, capped at 2MB / 2000px) before upload cuts OCR latency noticeably on a typical phone photo, and is kinder to a clinic's wifi
+- A polling fallback on `socket.disconnect()` turned out to be the single most important line for reliability — a doctor on a flaky connection still sees new patients within 5 seconds instead of a dashboard that just looks "stuck"
+- Because the QR overlay and the dashboard's `scan:created` listener share the same component tree, I can flip the overlay straight to a "✅ paired with {name}" state the instant the socket event for *that specific pairing session* arrives — no need to ask the patient "did it work?"
 
 ---
 
