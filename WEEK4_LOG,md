@@ -1,0 +1,153 @@
+# 📅 Week 4 Log — Colleqo + CropCortex
+
+**Duration:** 08 Jun – 14 Jun 2026  
+**Projects:** Colleqo (Days 22, 23, 24, 25, 26, 27) · CropCortex (Day 24, personal side-project)  
+**Tech Focus:** Hono · Cloudflare D1 · QR code generation · Licensing · Responsive testing
+
+---
+
+## 🎯 Week Goal
+Regression-test the Week 3 Colleqo UI overhaul, ship a QR-code-based attendance system end-to-end, lock the repo down with a proper license, and keep CropCortex's docs in sync with its real architecture.
+
+---
+
+## Day 22 — 08 Jun 2026 · Regression Testing the Week 3 UI Overhaul
+
+### What I Did
+Spent the day breaking things on purpose. Week 3 shipped a big desktop UI rebrand (sidebar, breadcrumb nav, role-based dashboards) — before building anything new on top of it, I went through every role (admin, teacher, student, parent) on tablet breakpoints specifically, since that's where flex/grid layouts tend to silently overflow first.
+
+### What I Found & Fixed
+- Sidebar overlapped the breadcrumb on `768px–820px` widths — a hardcoded `min-width` on the sidebar container instead of a `flex-shrink: 0`
+- Two dashboards had table columns that didn't wrap, pushing the page into horizontal scroll
+
+### Key Learnings
+- Testing tablet widths specifically (not just "mobile" and "desktop") catches a category of bug that phone-sized testing misses entirely — the in-between widths are where rigid widths break first
+- `flex-shrink: 0` vs `min-width` look similar in a flex container until the container itself gets squeezed — `min-width` wins and overflows, `flex-shrink: 0` just refuses to shrink below its content size
+
+---
+
+## Day 23 — 09 Jun 2026 · Bug Triage + Documenting CropCortex
+
+### What I Did
+- Triaged bug reports that came in after the new SaaS landing page + 3-tier pricing page went live — mostly copy/spacing issues on the pricing cards, nothing structural
+- Spent the rest of the day on CropCortex (a personal AgTech side-project, not a Colleqo task) — went through its own codebase to write up proper architecture documentation, since the repo had grown without much in the way of docs
+
+### Key Learnings
+- Writing documentation for an app *after* it's mostly built is a good forcing function for finding rough edges — explaining the Hono/Cloudflare backend out loud surfaced a couple of inconsistent response shapes I hadn't noticed while building
+
+---
+
+## Day 24 — 10 Jun 2026 · Colleqo Logo Rebrand + CropCortex README Fix
+
+### What I Did
+- Replaced every logo reference across the Colleqo codebase with the new `colleqo_logo.svg` — favicon, header, login screen, PWA manifest icons
+- Restructured the main README to match the rebrand (Colleqo, not CampusOS, everywhere)
+- CropCortex: fixed a formatting bug in the README's system architecture section (a broken code-fence was swallowing part of the diagram)
+
+### Key Learnings
+- A full logo swap touches more places than expected — manifest.json icons and favicon links are easy to forget since they're not visible in the running UI, only in browser tabs / "Add to Home Screen" prompts
+- Markdown code-fence bugs (mismatched triple-backticks) are silent on GitHub's renderer — it just swallows everything until the next fence, no error shown
+
+---
+
+## Day 25 — 11 Jun 2026 · QR Attendance — Design
+
+### What I Did
+Designed the QR-based attendance flow before writing the implementation: a teacher starts an attendance session, the backend generates a per-session QR code embedding the session ID + tenant ID, students scan it from their own device to mark present. Worked out the endpoint contracts and the QR payload format so Day 26's implementation would be straightforward.
+
+### QR Payload Design
+```typescript
+// Encode: sessionId + tenantId + timestamp into a compact string,
+// decode it back out when a student scans.
+export function generateQRCode(sessionId: string, tenantId: string): string {
+  const payload = `${sessionId}:${tenantId}:${Date.now()}`
+  return Buffer.from(payload).toString('base64url')
+}
+
+export function decodeQRCode(qrCode: string): { sid: string; tid: string; ts: number } | null {
+  try {
+    const decoded = Buffer.from(qrCode, 'base64url').toString('utf-8')
+    const [sid, tid, ts] = decoded.split(':')
+    if (!sid || !tid || !ts) return null
+    return { sid, tid, ts: parseInt(ts, 10) }
+  } catch {
+    return null
+  }
+}
+```
+
+### Key Learnings
+- Embedding the timestamp in the QR payload (not just session ID) means I can expire a QR code server-side without a separate "is this session still active" lookup table — just compare `Date.now() - ts` against a max age
+- `base64url` (not plain `base64`) avoids `+`/`/` characters that need URL-encoding if the QR payload is ever embedded in a link instead of scanned as a raw string
+
+---
+
+## Day 26 — 12 Jun 2026 · QR Attendance — Shipped + Proprietary License
+
+### What I Did
+- Implemented the backend endpoints from Day 25's design: session creation generates and stores the QR code, scan verification decodes it and marks the student present
+- Added in-session QR code image display on the teacher's screen — base64 PNG generated server-side via the `qrcode` package, embedded directly as a data URL so there's no extra round trip to fetch an image file
+- Added a proprietary `LICENSE` to the repo — the code stays public (for the portfolio/internship visibility) but isn't open for reuse
+
+### Backend Endpoint
+```typescript
+// src/routes/attendance.ts
+let qrCode: string | undefined
+if (sessionType === 'qr') {
+  qrCode = generateQRCode(id, user.tenant_id)
+}
+
+await c.env.DB.prepare(`
+  INSERT INTO attendance_sessions (id, tenant_id, teacher_id, class_id, qr_code, created_at)
+  VALUES (?, ?, ?, ?, ?, datetime('now'))
+`).bind(id, user.tenant_id, user.userId, classId, qrCode ?? null).run()
+```
+
+### QR Image Display
+```typescript
+import QRCode from 'qrcode'
+
+attendance.get('/:sessionId/qr-image', async (c) => {
+  const session = await getSession(c, c.req.param('sessionId'))
+  if (!session?.qr_code) return errorResponse(c, 'No QR code for this session', 404)
+
+  const dataUrl = await QRCode.toDataURL(session.qr_code, { width: 280, margin: 1 })
+  return successResponse(c, { qrDataUrl: dataUrl })
+})
+```
+
+### Key Learnings
+- Returning the QR as a base64 data URL instead of a separately-hosted image file keeps the whole "start session → show QR" flow to one request, which matters on a classroom wifi network with 30+ devices about to hit the same endpoint
+- A proprietary license doesn't stop the repo from being a useful, visible portfolio piece — `LICENSE` only governs reuse, not visibility, so it's the right call for something I want recruiters to actually read
+
+---
+
+## Day 27 — 13 Jun 2026 · QR Attendance — Testing Edge Cases
+
+### What I Did
+End-to-end tested the QR attendance flow with the kind of misuse a real classroom would produce: same student scanning twice, a QR code scanned after the teacher ended the session, and a stale QR code (from `Date.now() - ts` exceeding a max-age window).
+
+### What I Found & Fixed
+- Duplicate scans needed an explicit "already marked present" response instead of silently inserting a second attendance row
+- An ended session needed to reject new scans with a clear message instead of marking attendance into a closed session
+
+### Key Learnings
+- "Happy path" testing (one student, one scan, works fine) tells you almost nothing about a feature like this — the real bugs only show up once you simulate the chaos of 30 phones hitting the same QR within a few seconds of each other
+- A clear rejection message ("session has ended") is much better UX than a silent failure — the student needs to know to ask the teacher to mark them present manually
+
+---
+
+## 📊 Week 4 Summary
+
+| Metric | Count |
+|--------|-------|
+| Bugs Fixed (Week 3 regression) | 2 |
+| New Feature Shipped | QR-based attendance (end-to-end) |
+| Edge Cases Tested | 3 (duplicate scan, ended session, stale QR) |
+| Repo Hygiene | Proprietary LICENSE added, logo rebrand completed |
+
+**What went well:** Designing the QR payload format (Day 25) before touching the implementation meant Day 26's actual coding was fast — no mid-build redesign. Regression-testing tablet widths specifically (Day 22) caught a bug that phone/desktop testing alone would have missed entirely.
+
+**What was hard:** Getting the "stale QR" expiry logic right took a couple of tries — first version compared timestamps on the client, which is trivially bypassable; moved the check server-side where it actually matters for security.
+
+**Next week:** CropCortex deployment to Cloudflare Pages, Colleqo's Apple-style sidebar redesign + a security pass, and starting to wrap up ContextCare for production deployment.
