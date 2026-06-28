@@ -57,22 +57,24 @@
 ---
 
 ### 2. 🏥 ContextCare AI — Clinical Workspace Platform
-> *Production-grade Medical SaaS with real-time OCR + WebSocket dashboard*
+> *Single-stack Next.js medical SaaS — OCR lab-report digitization + real-time doctor dashboard*
 
 [![ContextCare](https://img.shields.io/badge/Repo-ContextCare-0D1117?style=for-the-badge&logo=github)](https://github.com/artist-hks/ContextCare)
-[![Live Demo](https://img.shields.io/badge/Live-context--care.vercel.app-FF6B6B?style=for-the-badge&logo=vercel)](https://context-care.vercel.app)
+[![Live Demo](https://img.shields.io/badge/Live-contextcare.onrender.com-FF6B6B?style=for-the-badge&logo=render&logoColor=white)](https://contextcare.onrender.com)
 ![TypeScript](https://img.shields.io/badge/TypeScript-93.1%25-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 ![JavaScript](https://img.shields.io/badge/JavaScript-5.4%25-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
 
 **What I Built:**
-- 🔬 OCR Pipeline — OpenCV preprocessing → Pytesseract → spaCy NER extraction
-- ⚡ Real-Time WebSocket Hub — live patient data broadcasting to doctor dashboards
-- 📄 PDF Report Generation — branded diagnostic PDFs via ReportLab
-- 🔐 JWT Auth System — bcrypt password hashing, 24-hour token sessions
-- 📈 Time-Series FBS Charts — Recharts trend visualizations in live dashboard
-- 🎯 Medical document classification & entity extraction using spaCy
+- 📸 OCR Pipeline — Sharp image preprocessing (grayscale, normalize, contrast, sharpen) → Tesseract.js text extraction → regex/alias-based metric parser
+- 🔗 QR Doctor-Patient Pairing — each doctor gets a unique QR token; patients scan it to securely link their scan to the right physician, no patient login needed
+- ⚡ Real-Time Dashboard — Socket.IO room-per-doctor (`doctor:<id>`) pushes new scans to the dashboard instantly, no polling
+- 🔐 PIN-Based Doctor Auth — bcrypt-hashed 4–6 digit PIN login, `iron-session` encrypted cookie sessions
+- 📈 Trend Charts + Notes — Recharts metric trend lines per patient, append-only clinical notes ledger
+- 📄 PDF Export — `@react-pdf/renderer` report generation, run in an isolated child process (its WASM layout engine doesn't survive Next.js bundling)
+- 🛡️ In-memory rate limiting on OCR/auth endpoints to block abuse on a single-process deployment
 
-**Tech Stack:** `Next.js 14` · `FastAPI` · `MongoDB` · `Motor` · `Docker` · `Recharts` · `WebSocket` · `PyJWT` · `spaCy` · `OpenCV`
+**Tech Stack:** `Next.js 14` · `Prisma` · `SQLite` · `Socket.IO` · `Tesseract.js` · `Sharp` · `iron-session` · `@react-pdf/renderer` · `Recharts` · `Railway/Render`
+
 
 ---
 
@@ -157,12 +159,12 @@
 | Date | Day | Work Done | Key Learnings |
 |------|-----|-----------|---------------|
 | **25 May** | Day 8 | ✅ Colleqo — completed Hostel & Library modules. Room allocation, book issuance, complaint system. Deployed to Cloudflare Pages (`npm run deploy`). | Cloudflare Pages deployment, production PWA checklist |
-| **26 May** | Day 9 | 🏥 New project started: **ContextCare AI**. Designed full system architecture — FastAPI backend, Next.js 14 frontend, MongoDB, WebSocket hub. Studied OCR pipeline requirements. | System architecture design, medical document workflows |
-| **27 May** | Day 10 | 🐍 Built FastAPI backend skeleton — project structure, CORS middleware, health endpoint, Pydantic models for `ExtractedDocument`. Set up Docker MongoDB container. | FastAPI async patterns, Docker compose, Pydantic validation |
-| **28 May** | Day 11 | 🔬 Built OCR pipeline — OpenCV image preprocessor (grayscale, denoise, CLAHE, deskew) → Pytesseract OCR engine → confidence scoring. Integrated with `/api/extract-document`. | Image preprocessing, OCR accuracy tuning, confidence thresholds |
-| **29 May** | Day 12 | 🧠 Integrated spaCy NER for medical entity extraction — document classification, date normalization, metric regex, medication extraction. Built `BaseMedicalExtractor` class. | spaCy NER, medical NLP, regex patterns for clinical data |
-| **30 May** | Day 13 | ⚡ Built WebSocket hub — `ConnectionManager` class broadcasting `ExtractedDocument` payloads to all connected doctor dashboards. Implemented `/ws/doctor-dashboard` endpoint. | WebSocket patterns in FastAPI, broadcast messaging |
-| **31 May** | Day 14 | 🔐 Completed auth system for ContextCare — bcrypt password hashing, PyJWT token generation, `HTTPBearer` FastAPI dependency injection. Built `/api/auth/register` and `/api/auth/login`. | bcrypt security, JWT token refresh strategies |
+| **26 May** | Day 9 | 🏥 New project started: **ContextCare AI**. Designed system architecture — single Next.js 14 app (API routes + custom server), Prisma + SQLite, Socket.IO. Scaffolded the project and the Doctor/Patient/Scan/Metric schema. | System architecture design, relational schema design, medical document workflows |
+| **27 May** | Day 10 | 🧵 Built the OCR pipeline — Sharp image preprocessing (grayscale, normalize, contrast, sharpen) → Tesseract.js worker, with the English model bundled locally to avoid runtime CDN downloads. | Tesseract.js worker-path resolution in a bundled Node server, image preprocessing |
+| **28 May** | Day 11 | 🔬 Built `/api/scans/extract` — multipart image upload, validation, OCR call, graceful fallback when no metrics are found. Added an in-memory sliding-window rate limiter. | API file upload handling, abuse-resistant rate limiting |
+| **29 May** | Day 12 | 🧠 Built the metric parser — canonical `METRIC_REFERENCE` table + alias-based regex extraction for 6 lab metrics (FBS, cholesterol, HDL/LDL, triglycerides, hemoglobin), with automatic normal/borderline/critical status. | Alias-table parsing vs. ML/NER trade-offs, single-source-of-truth reference data |
+| **30 May** | Day 13 | ⚡ Built the real-time layer — custom `server.ts` running Socket.IO alongside Next.js, doctor-room pattern (`doctor:<id>`), `emitScanCreated()` helper reachable from API routes via a shared `io` instance. | Socket.IO rooms, sharing state between a custom server and Next.js API routes |
+| **31 May** | Day 14 | 🔐 Built PIN-based doctor auth (bcrypt + `iron-session` cookie sessions) and the QR pairing flow — `/api/doctor/qr` + `/api/scans/pair`, with find-or-create patient logic keyed by doctor+phone. | iron-session vs. JWT trade-offs, QR-based pairing UX, idempotent patient lookups |
 
 ---
 
@@ -170,7 +172,7 @@
 
 | Date | Day | Work Done | Key Learnings |
 |------|-----|-----------|---------------|
-| **01 Jun** | Day 15 | 🎨 Built Next.js 14 frontend for ContextCare — App Router setup, dual-state auth form (login + register), route guards on `/doctor` dashboard, localStorage JWT validation. PDF download button. | Next.js 14 App Router, client-side route protection, localStorage timing in SSR |
+| **01 Jun** | Day 15 | 🎨 Built the rest of ContextCare's Next.js app — patient upload flow (compress → OCR review → QR pairing), doctor `QrPairOverlay`, Socket.IO client on the dashboard with a polling fallback on disconnect. | Client-side image compression, Socket.IO client patterns, graceful real-time degradation |
 | **02 Jun** | Day 16 | 🔔 Implemented FCM push notification system — backend FCM integration with graceful degradation, `push_subscriptions` DB table, `dispatchPush()` helper. Auto-triggers on announcement creation. | Firebase Cloud Messaging, Service Worker push events, upsert patterns |
 | **03 Jun** | Day 17 | 💳 Integrated Razorpay payment gateway into Colleqo fees module — create-order endpoint with HMAC-SHA256 signature verification, `payment_transactions` table, mock mode for local dev. | Razorpay integration, crypto.subtle HMAC, payment order flow |
 | **04 Jun** | Day 18 | 📱 Built Twilio SMS/WhatsApp alert system — `sendTwilioMessage()` with real `fetch()` to Twilio REST API, auto-triggers on low attendance (<75%) and fee payment confirmations. | Twilio REST API, URLSearchParams encoding, multi-channel messaging |
@@ -248,32 +250,31 @@ FRONTEND
 BACKEND
 ├── Node.js + Express              → REST API basics
 ├── Hono                           → Edge-ready web framework (Cloudflare Workers)
-├── FastAPI (Python)               → Async APIs, dependency injection
-├── JWT + bcrypt                   → Auth, session management
-└── WebSocket (FastAPI)            → Real-time broadcasting
+├── Next.js API Routes             → Full-stack routes + custom Node HTTP server
+├── JWT + bcrypt / iron-session    → Auth, encrypted session cookies
+└── Socket.IO                      → Real-time broadcasting (room-per-doctor)
 
 DATABASE
-├── MongoDB + Motor/Mongoose       → Document store, async I/O, ODM modeling
+├── MongoDB + Mongoose             → Document store, ODM modeling
+├── Prisma + SQLite                → Type-safe ORM, embedded relational DB
 ├── Cloudflare D1 (SQLite)         → Serverless relational DB
 └── IndexedDB                      → Client-side offline storage
 
-AI / ML / NLP
-├── OpenCV                         → Image preprocessing pipeline
-├── Pytesseract                    → OCR text extraction
-├── spaCy                          → Named Entity Recognition (NER)
+AI / ML / OCR
+├── Tesseract.js + Sharp           → In-browser/Node OCR + image preprocessing
 ├── Google Gemini API              → AI task-effort estimation (TaskFlow)
 ├── NDVI Satellite Imagery         → Crop stress detection (CropCortex)
-└── ReportLab                      → PDF generation
+└── @react-pdf/renderer            → PDF report generation (isolated child process)
 
 INTEGRATIONS
 ├── Firebase Cloud Messaging       → Push notifications
 ├── Razorpay                       → Payment gateway
 ├── Twilio                         → SMS & WhatsApp messaging
+├── qrcode / html5-qrcode          → QR generation & in-browser scanning
 
 DEVOPS
-├── Docker                         → Container management
 ├── Cloudflare Workers/Pages       → Edge deployment
-├── Render.com                     → Backend cloud deployment
+├── Render.com / Railway           → Backend cloud deployment
 └── Vercel                         → Frontend deployment
 ```
 
@@ -285,13 +286,13 @@ DEVOPS
 
 | Category | Skills |
 |----------|--------|
-| **Full-Stack Dev** | MERN architecture, REST APIs, WebSockets, PWA, system design |
+| **Full-Stack Dev** | MERN architecture, REST APIs, real-time sockets, PWA, system design |
 | **Mobile Dev** | React Native, Expo Router, Zustand state management, offline-first design |
-| **Backend** | FastAPI, Hono, JWT auth, async programming, API design |
-| **Database** | MongoDB schema design, SQL migrations, multi-tenant DB, query optimization |
-| **AI/ML Integration** | OCR pipeline, NLP/NER, Gemini API task estimation, NDVI satellite imagery, image preprocessing |
-| **Integrations** | FCM, Razorpay, Twilio, payment verification, real-time messaging |
-| **DevOps** | Docker, Cloudflare deployment, Render, Vercel, CI/CD basics |
+| **Backend** | Node.js/Express, Hono, Next.js API routes, custom HTTP+WebSocket servers, JWT/session auth |
+| **Database** | MongoDB schema design, Prisma ORM, SQL migrations, multi-tenant DB, query optimization |
+| **AI/ML Integration** | OCR pipeline (Tesseract.js), Gemini API task estimation, NDVI satellite imagery, image preprocessing |
+| **Integrations** | FCM, Razorpay, Twilio, QR generation/scanning, payment verification, real-time messaging |
+| **DevOps** | Cloudflare deployment, Render, Railway, Vercel, CI/CD basics |
 | **Engineering Practices** | Abstract interfaces, modular code, system architecture, testing patterns |
 
 </div>
@@ -305,7 +306,7 @@ DEVOPS
 [![GitHub](https://img.shields.io/badge/GitHub-artist--hks-0D1117?style=for-the-badge&logo=github)](https://github.com/artist-hks)
 [![Portfolio](https://img.shields.io/badge/Portfolio-artist--hks.vercel.app-00D9FF?style=for-the-badge&logo=vercel)](https://artist-hks.vercel.app)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-artisthks-0A66C2?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/in/artisthks)
-[![ContextCare Live](https://img.shields.io/badge/ContextCare-Live%20Demo-FF6B6B?style=for-the-badge&logo=react)](https://context-care.vercel.app)
+[![ContextCare Live](https://img.shields.io/badge/ContextCare-Live%20Demo-FF6B6B?style=for-the-badge&logo=render&logoColor=white)](https://contextcare.onrender.com)
 [![Colleqo Live](https://img.shields.io/badge/Colleqo-Live%20Demo-4CAF50?style=for-the-badge&logo=cloudflare)](https://campusos.pages.dev)
 [![CropCortex Live](https://img.shields.io/badge/CropCortex-Live%20Demo-00D9FF?style=for-the-badge&logo=cloudflare)](https://cropcortex-app.pages.dev)
 [![TaskFlow Live](https://img.shields.io/badge/TaskFlow-Live%20Demo-B45309?style=for-the-badge&logo=vercel)](https://taskflow-hks.vercel.app)
