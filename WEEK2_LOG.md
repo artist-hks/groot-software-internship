@@ -1,13 +1,13 @@
 # 📅 Week 2 Log — ContextCare AI
 
 **Duration:** 25 May – 31 May 2026  
-**Project:** ContextCare AI — Intelligent Real-Time Clinical Workspace  
-**Tech Focus:** FastAPI · Next.js 14 · MongoDB · WebSocket · OpenCV · Pytesseract · spaCy · ReportLab · Docker
+**Project:** ContextCare AI — Real-Time Clinical Workspace  
+**Tech Focus:** Next.js 14 (single full-stack app) · Prisma + SQLite · Socket.IO · Tesseract.js + Sharp · iron-session
 
 ---
 
 ## 🎯 Week Goal
-Build ContextCare AI from scratch — a production-grade medical SaaS platform that lets a doctor scan a patient's lab report with their phone, extract values via OCR+NLP, and see live data appear on their dashboard through WebSocket.
+Build ContextCare AI from scratch — a clinical workspace that lets a patient photograph a lab report on their phone, pairs them to the right doctor via a QR code, runs OCR to pull out diagnostic values, and pushes the result live onto the doctor's dashboard.
 
 ---
 
@@ -18,543 +18,385 @@ Build ContextCare AI from scratch — a production-grade medical SaaS platform t
   - Hostel: room allocation table, complaint system, warden dashboard
   - Library: book catalog, issuance tracking, overdue detection
   - Final deploy to Cloudflare Pages — ✅ live
-- **Afternoon:** Started ContextCare AI — drew out the full system architecture before writing a single line of code
+- **Afternoon:** Started ContextCare AI — drew out the system architecture before writing a single line of code. Decided early to keep this as **one Next.js app** (API routes + a thin custom server) instead of a separate backend service — less moving parts to deploy and debug solo.
 
 ### ContextCare System Design
 ```
-Mobile Device (Patient)
-      │
-      │  POST /api/broadcast-intel
-      │  Header: x-doctor-id: <uuid>
-      │  Body: ExtractedDocument JSON
-      ▼
-FastAPI Engine (Port 8000)
-      ├── /api/auth/*        → bcrypt + PyJWT
-      ├── /api/extract-intel → OCR pipeline
-      ├── /api/broadcast-intel → WebSocket hub
-      ├── /api/scans         → MongoDB history
-      └── /ws/doctor-dashboard → WebSocket endpoint
-      │
-      ├── MongoDB (Docker)   → persist all scans
-      └── WebSocket Hub      → broadcast to doctor dashboard
-                                      │
-                            Next.js Dashboard (Doctor)
-                            Port 3000
-                            ├── /login   → JWT auth form
-                            └── /doctor  → Live dashboard
-                                         ├── WebSocket listener
-                                         ├── Recharts FBS trend
-                                         └── PDF download button
+                 ┌────────────────────────────────────────┐
+                 │           Custom HTTP Server            │
+                 │             (server.ts)                 │
+                 ├────────────────────┬─────────────────────┤
+                 │   Next.js App      │     Socket.IO        │
+                 │   (SSR + API)      │    (WebSocket)       │
+                 └────────┬───────────┴──────────┬───────────┘
+                          │                      │
+            ┌─────────────┼──────────────────────┼────────────┐
+            │              │                      │            │
+   ┌────────▼────────┐ ┌──▼────────────┐  ┌──────▼─────────┐   │
+   │  Patient Flow   │ │  Doctor Flow  │  │  Real-time     │   │
+   │  • Upload photo │ │  • PIN login  │  │  events        │   │
+   │  • OCR extract  │ │  • Dashboard  │  │  • scan:created│   │
+   │  • Review       │ │  • Notes/PDF  │  │  • heartbeat   │   │
+   │  • QR pairing   │ │               │  │                │   │
+   └────────┬────────┘ └───────┬───────┘  └────────────────┘   │
+            └──────────┬───────┘                                │
+                ┌───────▼────────┐                              │
+                │  Prisma + SQLite│                              │
+                └────────────────┘                              │
+            ┌─────────────────────────────────────────────────────┘
+            │
+   ┌────────▼────────┐
+   │ Tesseract.js +  │
+   │     Sharp       │
+   └─────────────────┘
 ```
 
 ### Key Design Decisions Made
-1. **Why FastAPI over Express?** OCR (OpenCV + Pytesseract) and NLP (spaCy) are Python libraries — no JS equivalent at this quality level. FastAPI gives async support without sacrificing Python ecosystem.
-2. **Why MongoDB?** Patient scan documents are schema-flexible (different report types have different metrics) — MongoDB's document model fits perfectly.
-3. **Why WebSocket instead of polling?** Polling every 2 seconds would create 30 requests/minute per doctor — WebSocket is one persistent connection, instant updates.
-4. **Why Next.js 14 App Router?** Server Components reduce JS bundle size; App Router's nested layouts work well for the auth → dashboard flow.
+1. **Why one Next.js app instead of a separate backend?** API routes + a custom `server.ts` give me REST endpoints, SSR pages, and a WebSocket server all in one deployable unit — one Render/Railway service instead of two to keep alive.
+2. **Why Prisma + SQLite instead of MongoDB?** The data here is genuinely relational (Doctor → Patient → Scan → Metric) — foreign keys and `@@unique([doctorId, phone])` constraints are a natural fit, and SQLite needs zero external DB service for a solo project.
+3. **Why Socket.IO instead of raw WebSocket?** Built-in room support (`doctor:<id>`) makes "broadcast to this one doctor's open tabs" trivial — no need to hand-roll a connection registry.
+4. **Why PIN + QR pairing instead of email/password for both sides?** Doctors log in once with a short PIN (low friction on a clinic tablet); patients never need an account at all — they just scan the doctor's QR and submit, which matches how a real walk-in visit works.
 
 ---
 
-## Day 9 — 26 May 2026 · FastAPI Backend Skeleton + Docker MongoDB
+## Day 9 — 26 May 2026 · Next.js Scaffolding + Prisma Schema
 
 ### What I Did
-- Created `backend/` folder with project structure:
-  ```
-  backend/
-  ├── main.py           → FastAPI app, all routes + WebSocket
-  ├── database.py       → Motor async MongoDB client + Pydantic models
-  ├── restore_pdf.py    → PDF generation utility
-  └── requirements.txt  → all Python dependencies
-  ```
-- Set up **Docker MongoDB** container:
-  ```bash
-  docker run -d --name contextcare-mongo -p 27017:27017 mongo:latest
-  ```
-- Built FastAPI app skeleton — CORS middleware, health endpoint, app metadata
-- Defined **Pydantic models**: `ExtractedDocument`, `MetricEntity`, `MedicationEntity`, `DoctorModel`, `ScanRecord`
-- Wrote `requirements.txt`:
-  ```
-  fastapi, uvicorn[standard], motor, pymongo, python-jose[cryptography],
-  bcrypt, opencv-python, pytesseract, spacy, reportlab, python-multipart
-  ```
+- Scaffolded the Next.js 14 App Router project — `app/`, `lib/`, `components/`, `prisma/`
+- Designed the relational schema in `prisma/schema.prisma`: `Doctor → Patient → Scan → Metric`, plus a `Note` model for clinical notes
+- Set `datasource db { provider = "sqlite" }` — zero external DB service needed during development
+- Ran the first migration and got Prisma Client generating types automatically on `postinstall`
 
-### Pydantic Model Design
-```python
-# database.py
-from pydantic import BaseModel
-from typing import Optional, List
-from datetime import datetime
+### Prisma Schema
+```prisma
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
 
-class MetricEntity(BaseModel):
-    name: str           # e.g., "Fasting Blood Sugar"
-    value: float
-    unit: str           # e.g., "mg/dL"
-    status: str         # "normal" | "high" | "low" | "critical"
-    normal_range: str   # e.g., "70-100 mg/dL"
+model Doctor {
+  id             String    @id @default(cuid())
+  name           String
+  specialization String?
+  pinHash        String
+  qrToken        String    @unique
+  patients       Patient[]
+}
 
-class ExtractedDocument(BaseModel):
-    document_type: str          # "blood_test" | "urine_test" | "lipid_panel"
-    patient_name: Optional[str]
-    report_date: Optional[str]
-    metrics: List[MetricEntity]
-    medications: List[str]
-    raw_text: str
-    confidence_score: float     # OCR confidence (0.0 - 1.0)
-    extracted_at: datetime = datetime.now()
+model Patient {
+  id        String   @id @default(cuid())
+  doctorId  String
+  doctor    Doctor   @relation(fields: [doctorId], references: [id])
+  name      String
+  phone     String
+  scans     Scan[]
+  notes     Note[]
+
+  @@unique([doctorId, phone])
+}
+
+model Scan {
+  id        String   @id @default(cuid())
+  patientId String
+  patient   Patient  @relation(fields: [patientId], references: [id])
+  rawText   String?
+  metrics   Metric[]
+}
+
+model Metric {
+  id     String @id @default(cuid())
+  scanId String
+  scan   Scan   @relation(fields: [scanId], references: [id])
+  key    String
+  label  String
+  value  Float
+  unit   String
+  refMin Float
+  refMax Float
+  status String // "normal" | "borderline" | "critical"
+}
 ```
 
 ### Key Learnings
-- Docker's `-p 27017:27017` maps container port to host — Motor connects to `mongodb://localhost:27017` from host
-- Pydantic v2 (default in new projects) has different validator syntax than v1 — `@field_validator` replaces `@validator`
-- FastAPI auto-generates `/docs` (Swagger UI) — invaluable for testing endpoints without Postman
+- `@@unique([doctorId, phone])` on `Patient` is doing real work — it means a repeat patient under the same doctor maps to one row, so all their scans build one trend history instead of duplicating the patient each visit
+- Prisma's `postinstall: prisma generate` means the typed client is always in sync after `npm install` — no separate codegen step to remember
+- SQLite via Prisma needs zero setup for local dev, and on Render/Railway it just needs a persistent volume + `DATABASE_URL` pointed at a file path
 
 ---
 
-## Day 10 — 27 May 2026 · OCR Pipeline — Image Preprocessing
+## Day 10 — 27 May 2026 · OCR Pipeline — Tesseract.js + Sharp
 
 ### What I Did
-Built the image preprocessing pipeline — the most critical step in OCR accuracy. Raw phone photos of lab reports have noise, shadows, skew, and poor contrast. We need to fix all of this before feeding to Tesseract.
+Built the OCR pipeline using **Tesseract.js + Sharp** instead of Python's OpenCV/Pytesseract — kept everything inside the Node.js process so there's no second language/runtime to deploy. Bundled the English language model locally so the OCR worker never needs a CDN download at runtime (important for slow clinic wifi).
 
-### Preprocessing Steps (in order)
-```python
-import cv2
-import numpy as np
+### Image Preprocessing (Sharp)
+```typescript
+// lib/ocr.ts
+import sharp from "sharp";
 
-class ImagePreprocessor:
-    def preprocess(self, image_bytes: bytes) -> np.ndarray:
-        # Step 1: Decode image bytes to numpy array
-        nparr = np.frombuffer(image_bytes, np.uint8)
-        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        
-        # Step 2: Resize — Tesseract works best at 300 DPI equivalent
-        # If image is smaller than 800px wide, upscale
-        h, w = img.shape[:2]
-        if w < 800:
-            scale = 800 / w
-            img = cv2.resize(img, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
-        
-        # Step 3: Convert to grayscale
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        
-        # Step 4: Bilateral filter — removes noise but PRESERVES edges (text edges)
-        # (vs Gaussian blur which blurs text edges too)
-        denoised = cv2.bilateralFilter(gray, 9, 75, 75)
-        
-        # Step 5: CLAHE — Contrast Limited Adaptive Histogram Equalization
-        # Improves contrast locally — helps with uneven lighting / shadows
-        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-        enhanced = clahe.apply(denoised)
-        
-        # Step 6: Adaptive thresholding — converts to binary (black/white)
-        # Adaptive (vs global) handles varying background brightness across the image
-        binary = cv2.adaptiveThreshold(
-            enhanced, 255,
-            cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-            cv2.THRESH_BINARY, 11, 2
-        )
-        
-        # Step 7: Morphological cleanup — remove tiny dots/noise
-        kernel = np.ones((1, 1), np.uint8)
-        cleaned = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel)
-        
-        # Step 8: Deskew correction
-        return self._deskew(cleaned)
-    
-    def _deskew(self, image: np.ndarray) -> np.ndarray:
-        # Find text angle using Hough lines
-        coords = np.column_stack(np.where(image > 0))
-        angle = cv2.minAreaRect(coords)[-1]
-        if angle < -45:
-            angle = -(90 + angle)
-        else:
-            angle = -angle
-        
-        # Rotate image to correct skew
-        (h, w) = image.shape[:2]
-        center = (w // 2, h // 2)
-        M = cv2.getRotationMatrix2D(center, angle, 1.0)
-        return cv2.warpAffine(image, M, (w, h), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
+/**
+ * Preprocess an image buffer for OCR: grayscale + normalize + contrast boost.
+ * The JS equivalent of grayscale/denoise/threshold.
+ */
+export async function preprocessImage(buffer: Buffer): Promise<Buffer> {
+  return sharp(buffer)
+    .rotate()          // honor EXIF orientation (phone photos are often rotated)
+    .grayscale()
+    .normalize()
+    .linear(1.25, -20) // contrast boost
+    .sharpen()
+    .toFormat("png")
+    .toBuffer();
+}
 ```
 
-### Why Each Step Matters
-| Step | Without It | With It |
-|------|-----------|---------|
-| Resize | Tesseract misses small text | Consistent character size |
-| Bilateral Filter | Gaussian blur smears text | Noise gone, text edges sharp |
-| CLAHE | Shadow areas unreadable | Even contrast everywhere |
-| Adaptive Threshold | Global threshold fails on mixed backgrounds | Binary image regardless of lighting |
-| Deskew | Slanted text → garbled OCR | Horizontal text → clean OCR |
+### Tesseract.js Worker Setup
+```typescript
+// Explicitly resolve tesseract.js' Node worker script + wasm core from
+// node_modules. Without this, the bundled server context mis-resolves the
+// worker path (e.g. to .next/worker-script/...) and the OCR worker crashes.
+const NODE_WORKER = resolveSafe("tesseract.js/src/worker-script/node/index.js");
+const CORE_DIR = (() => {
+  const idx = resolveSafe("tesseract.js-core/index.js");
+  return idx ? path.dirname(idx) : undefined;
+})();
 
-### Key Learnings
-- `cv2.bilateralFilter` is slower than Gaussian but critical — it's the only denoiser that doesn't blur edges
-- CLAHE's `tileGridSize=(8,8)` divides the image into 64 tiles — each tile gets its own histogram equalization
-- Deskew using `minAreaRect` on white pixel coords is a classic trick — gives the dominant text angle
-
----
-
-## Day 11 — 28 May 2026 · OCR Engine + `/api/extract-intel` Endpoint
-
-### What I Did
-- Built `OCREngine` class wrapping Pytesseract with confidence scoring
-- Built `/api/extract-intel` endpoint — accepts image upload, runs full pipeline, returns `ExtractedDocument`
-
-### OCR Engine
-```python
-import pytesseract
-from PIL import Image
-import io
-
-class OCREngine:
-    def extract_text(self, preprocessed_image: np.ndarray) -> tuple[str, float]:
-        # Convert numpy array to PIL Image (Pytesseract needs PIL)
-        pil_img = Image.fromarray(preprocessed_image)
-        
-        # OEM 3 = LSTM neural net engine (most accurate)
-        # PSM 6 = assume uniform block of text (good for lab reports)
-        custom_config = r'--oem 3 --psm 6'
-        
-        # Get word-level data with confidence scores
-        data = pytesseract.image_to_data(
-            pil_img,
-            config=custom_config,
-            output_type=pytesseract.Output.DICT
-        )
-        
-        # Filter words with confidence > 60 (ignore noise words)
-        words = []
-        confidences = []
-        for i, conf in enumerate(data['conf']):
-            if int(conf) > 60:
-                words.append(data['text'][i])
-                confidences.append(int(conf))
-        
-        full_text = ' '.join(w for w in words if w.strip())
-        mean_confidence = sum(confidences) / len(confidences) if confidences else 0
-        
-        return full_text, mean_confidence / 100  # normalize to 0.0–1.0
-
-# FastAPI endpoint
-@app.post("/api/extract-intel")
-async def extract_intel(file: UploadFile = File(...)):
-    image_bytes = await file.read()
-    
-    preprocessor = ImagePreprocessor()
-    ocr_engine = OCREngine()
-    extractor = SpaCyRuleBasedExtractor()
-    
-    preprocessed = preprocessor.preprocess(image_bytes)
-    raw_text, confidence = ocr_engine.extract_text(preprocessed)
-    document = extractor.extract(raw_text, confidence)
-    
-    return document
+const worker = await createWorker("eng", 1, {
+  langPath: LANG_PATH,       // locally bundled traineddata, no CDN fetch
+  workerPath: NODE_WORKER,
+  corePath: CORE_DIR,
+  gzip: false,
+});
 ```
 
 ### Key Learnings
-- `--oem 3` (LSTM) is significantly more accurate than `--oem 0` (Legacy) for lab report text
-- `--psm 6` (uniform text block) works better than default PSM 3 (auto-detect) for structured lab reports
-- Confidence filtering at 60% removes most garbage characters without losing real text
-- Mean confidence score is a good quality signal to expose in the response — lets client warn user if scan quality is poor
+- Tesseract.js's Node worker path resolution silently breaks once Next.js bundles the server code — had to manually `require.resolve()` the worker script and WASM core instead of letting the library auto-detect paths
+- Bundling `tessdata/eng.traineddata` in the repo avoids a runtime download — first OCR call would otherwise be slow (or fail) on a flaky connection
+- `sharp().linear(1.25, -20)` is a cheap contrast boost (`output = input * a + b`) — close enough to what a CLAHE step does for these photos, without needing OpenCV at all
 
 ---
 
-## Day 12 — 29 May 2026 · spaCy NER — Medical Entity Extraction
+## Day 11 — 28 May 2026 · `/api/scans/extract` Endpoint
 
 ### What I Did
-- Built `SpaCyRuleBasedExtractor` — extracts structured data from raw OCR text
-- Designed as an abstract base class (`BaseMedicalExtractor`) so it's swappable with ClinicalBERT or any LLM later
-- Covers: document type classification, date normalization, metric regex extraction, medication NER, threshold status
+- Built `runOcr()` — ties preprocessing + the Tesseract worker into one call returning raw text
+- Built `POST /api/scans/extract` — multipart image upload, validation, OCR, and a graceful "couldn't read it" response instead of a hard failure
+- Added a simple in-memory rate limiter so the OCR endpoint can't be hammered
 
-### Extractor Architecture
-```python
-from abc import ABC, abstractmethod
-import spacy
-import re
-from datetime import datetime
+### Extract Route
+```typescript
+// app/api/scans/extract/route.ts
+const MAX_BYTES = 8 * 1024 * 1024; // 8MB
 
-class BaseMedicalExtractor(ABC):
-    @abstractmethod
-    def extract(self, raw_text: str, confidence: float) -> ExtractedDocument:
-        pass
+export async function POST(req: NextRequest) {
+  const ip = clientIp(req);
+  const limit = rateLimit(ip);
+  if (!limit.ok) {
+    return NextResponse.json(
+      { error: `Too many uploads. Try again in ${limit.retryAfter}s.` },
+      { status: 429 }
+    );
+  }
 
-class SpaCyRuleBasedExtractor(BaseMedicalExtractor):
-    def __init__(self):
-        self.nlp = spacy.load("en_core_web_sm")
-        
-        # Metric patterns — covers common lab report formats
-        self.METRIC_PATTERNS = {
-            "Fasting Blood Sugar": r"(?:FBS|Fasting\s+Blood\s+Sugar)[:\s]+(\d+\.?\d*)\s*(mg/dL|mmol/L)?",
-            "HbA1c": r"(?:HbA1c|Glycated\s+Haemoglobin)[:\s]+(\d+\.?\d*)\s*(%)?",
-            "Total Cholesterol": r"(?:Total\s+Cholesterol)[:\s]+(\d+\.?\d*)\s*(mg/dL)?",
-            "Hemoglobin": r"(?:Hemoglobin|Hb|Hgb)[:\s]+(\d+\.?\d*)\s*(g/dL)?",
-            "Creatinine": r"(?:Creatinine|Creat)[:\s]+(\d+\.?\d*)\s*(mg/dL)?",
-        }
-        
-        # Normal ranges for threshold detection
-        self.NORMAL_RANGES = {
-            "Fasting Blood Sugar": (70, 100, "mg/dL"),
-            "HbA1c": (4.0, 5.6, "%"),
-            "Total Cholesterol": (0, 200, "mg/dL"),
-            "Hemoglobin": (12.0, 17.5, "g/dL"),
-            "Creatinine": (0.6, 1.2, "mg/dL"),
-        }
-    
-    def extract(self, raw_text: str, confidence: float) -> ExtractedDocument:
-        doc = self.nlp(raw_text)
-        
-        return ExtractedDocument(
-            document_type=self._classify_document(raw_text),
-            patient_name=self._extract_patient_name(doc),
-            report_date=self._extract_date(raw_text),
-            metrics=self._extract_metrics(raw_text),
-            medications=self._extract_medications(doc),
-            raw_text=raw_text,
-            confidence_score=confidence
-        )
-    
-    def _classify_document(self, text: str) -> str:
-        text_lower = text.lower()
-        if any(kw in text_lower for kw in ["blood sugar", "fbs", "hba1c", "glucose"]):
-            return "blood_test"
-        elif any(kw in text_lower for kw in ["urine", "urea", "creatinine"]):
-            return "urine_test"
-        elif any(kw in text_lower for kw in ["cholesterol", "ldl", "hdl", "triglyceride"]):
-            return "lipid_panel"
-        return "general_report"
-    
-    def _extract_metrics(self, text: str) -> List[MetricEntity]:
-        metrics = []
-        for metric_name, pattern in self.METRIC_PATTERNS.items():
-            match = re.search(pattern, text, re.IGNORECASE)
-            if match:
-                value = float(match.group(1))
-                unit = match.group(2) if match.lastindex >= 2 else self.NORMAL_RANGES[metric_name][2]
-                status = self._get_status(metric_name, value)
-                low, high, _ = self.NORMAL_RANGES[metric_name]
-                metrics.append(MetricEntity(
-                    name=metric_name, value=value, unit=unit,
-                    status=status, normal_range=f"{low}–{high} {unit}"
-                ))
-        return metrics
-    
-    def _get_status(self, metric: str, value: float) -> str:
-        low, high, _ = self.NORMAL_RANGES[metric]
-        if value < low: return "low"
-        if value > high * 1.5: return "critical"
-        if value > high: return "high"
-        return "normal"
+  const form = await req.formData();
+  const file = form.get("image");
+  if (!file || !(file instanceof File) || !file.type.startsWith("image/")) {
+    return NextResponse.json({ error: "Please upload a photo of your report." }, { status: 400 });
+  }
+  if (file.size > MAX_BYTES) {
+    return NextResponse.json({ error: "Image is larger than 8MB." }, { status: 400 });
+  }
+
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const rawText = await runOcr(buffer);
+  const metrics = parseMetricsFromText(rawText);
+
+  if (metrics.length === 0) {
+    return NextResponse.json({
+      rawText, metrics: [],
+      warning: "We couldn't read any known lab values. You can add them manually on the next screen.",
+    });
+  }
+  return NextResponse.json({ rawText, metrics });
+}
 ```
 
-### Pluggable Design — Why This Matters
-```python
-# Swapping to ClinicalBERT later requires ZERO other code changes:
-class ClinicalBERTExtractor(BaseMedicalExtractor):
-    def extract(self, raw_text: str, confidence: float) -> ExtractedDocument:
-        # Use transformer model here
-        ...
+### In-Memory Rate Limiter
+```typescript
+// lib/ratelimit.ts — sliding window, no external service needed for a solo deploy
+const WINDOW_MS = 60 * 1000;
+const MAX_REQUESTS = 10;
+const hits = new Map<string, number[]>();
 
-# In main.py, just change one line:
-extractor = ClinicalBERTExtractor("/models/clinicalbert")  # was SpaCyRuleBasedExtractor()
+export function rateLimit(ip: string) {
+  const now = Date.now();
+  const timestamps = (hits.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
+  if (timestamps.length >= MAX_REQUESTS) {
+    return { ok: false, retryAfter: Math.ceil((WINDOW_MS - (now - timestamps[0])) / 1000) };
+  }
+  timestamps.push(now);
+  hits.set(ip, timestamps);
+  return { ok: true, retryAfter: 0 };
+}
 ```
 
 ### Key Learnings
-- `re.IGNORECASE` is essential — lab reports have inconsistent casing ("FBS", "fbs", "Fbs" all appear)
-- spaCy's `en_core_web_sm` NER recognizes `PERSON` entities — useful for extracting patient names from free text
-- Abstract base classes (`ABC`) + single injection point make systems genuinely extensible — this is the Open/Closed Principle in practice
+- Failing "softly" (returning `metrics: []` + a warning, not a 500) matters here — a patient with a blurry photo should still be able to continue and enter values manually, not get stuck
+- A 60-second sliding window with a `Map<ip, timestamps[]>` is enough abuse protection for a single-process app — no Redis needed at this scale
+- `file.type.startsWith("image/")` + an explicit byte-size cap catches most bad uploads before they ever touch the OCR worker
 
 ---
 
-## Day 13 — 30 May 2026 · WebSocket Hub — Real-Time Broadcasting
+## Day 12 — 29 May 2026 · Metric Parser — Alias-Based Extraction
 
 ### What I Did
-- Built `ConnectionManager` — manages all active WebSocket connections per doctor
-- Implemented `/ws/doctor-dashboard` WebSocket endpoint
-- Built `/api/broadcast-intel` — receives scan data and broadcasts to all connected dashboard sessions of that doctor
+- Built a canonical `METRIC_REFERENCE` table — six lab metrics (FBS, Total Cholesterol, HDL, LDL, Triglycerides, Hemoglobin) each with label, unit, and a normal range
+- Built `parseMetricsFromText()` — scans OCR output line by line, matches against known aliases per metric (lab reports format these inconsistently), and pulls out the first plausible number
+- Decided against a full NLP/NER model here — lab reports are structured enough that alias + regex matching is faster, has zero model-loading cost, and is much easier for me to debug than a black-box extractor
 
-### ConnectionManager
-```python
-from fastapi import WebSocket
-from typing import Dict, List
+### Metric Reference + Parser
+```typescript
+// lib/metrics.ts — shared between the OCR pipeline, the API, the UI, and the PDF
+export const METRIC_REFERENCE: Record<string, MetricReference> = {
+  fbs: {
+    label: "Fasting Blood Sugar",
+    aliases: ["fasting blood sugar", "fbs", "glucose fasting", "blood sugar fasting"],
+    unit: "mg/dL", min: 70, max: 99,
+  },
+  total_cholesterol: {
+    label: "Total Cholesterol",
+    aliases: ["total cholesterol", "cholesterol total", "cholesterol"],
+    unit: "mg/dL", min: 125, max: 200,
+  },
+  // ...hdl, ldl, triglycerides, hemoglobin follow the same shape
+};
 
-class ConnectionManager:
-    def __init__(self):
-        # doctor_id → list of active WebSocket connections
-        # (one doctor could have dashboard open on multiple tabs)
-        self.active_connections: Dict[str, List[WebSocket]] = {}
-    
-    async def connect(self, websocket: WebSocket, doctor_id: str):
-        await websocket.accept()
-        if doctor_id not in self.active_connections:
-            self.active_connections[doctor_id] = []
-        self.active_connections[doctor_id].append(websocket)
-    
-    def disconnect(self, websocket: WebSocket, doctor_id: str):
-        if doctor_id in self.active_connections:
-            self.active_connections[doctor_id].remove(websocket)
-    
-    async def broadcast_to_doctor(self, doctor_id: str, data: dict):
-        if doctor_id not in self.active_connections:
-            return  # doctor not currently online — data is in MongoDB anyway
-        
-        dead_connections = []
-        for connection in self.active_connections[doctor_id]:
-            try:
-                await connection.send_json(data)
-            except Exception:
-                dead_connections.append(connection)  # connection dropped
-        
-        # Clean up dead connections
-        for dead in dead_connections:
-            self.active_connections[doctor_id].remove(dead)
+export function parseMetricsFromText(rawText: string): ExtractedMetric[] {
+  const lines = rawText.split(/\r?\n/);
+  const found: Record<string, ExtractedMetric> = {};
 
-manager = ConnectionManager()
+  for (const rawLine of lines) {
+    const norm = normalizeLine(rawLine);
+    for (const { key, alias } of ALIAS_INDEX) {
+      if (found[key] || !norm.includes(alias)) continue;
+      // Prefer the number right after the alias text, else the first number on the line
+      const afterAlias = norm.slice(norm.indexOf(alias) + alias.length);
+      const value = firstNumber(afterAlias) ?? firstNumber(norm);
+      if (value === null) continue;
 
-# WebSocket endpoint
-@app.websocket("/ws/doctor-dashboard")
-async def websocket_endpoint(websocket: WebSocket, doctor_id: str):
-    await manager.connect(websocket, doctor_id)
-    try:
-        while True:
-            await websocket.receive_text()  # keep connection alive
-    except WebSocketDisconnect:
-        manager.disconnect(websocket, doctor_id)
-
-# Broadcast endpoint (called by mobile scanner)
-@app.post("/api/broadcast-intel")
-async def broadcast_intel(
-    document: ExtractedDocument,
-    doctor_id: str = Header(..., alias="x-doctor-id")
-):
-    # 1. Persist to MongoDB
-    await db.patient_scans.insert_one({
-        "doctor_id": doctor_id,
-        "document": document.dict(),
-        "received_at": datetime.now()
-    })
-    
-    # 2. Broadcast to all dashboard sessions of this doctor
-    await manager.broadcast_to_doctor(doctor_id, document.dict())
-    
-    return {"status": "broadcast_sent"}
-```
-
-### Why `x-doctor-id` Header (Not JWT)?
-The mobile scanner app doesn't have the doctor's JWT — it just has a QR code link with the doctor_id embedded. Using a custom header keeps the mobile flow simple: scan QR → POST to endpoint with doctor_id header. Security is acceptable here because the data is being *sent to* the doctor, not accessing private data.
-
-### Key Learnings
-- Dictionary of `doctor_id → [WebSocket list]` handles one doctor's multiple browser tabs elegantly
-- Dead connection cleanup is critical — stale WebSocket objects cause errors on next broadcast
-- `receive_text()` in a while loop keeps the connection alive — without it FastAPI closes the WebSocket immediately
-
----
-
-## Day 14 — 31 May 2026 · JWT Auth System + MongoDB Integration
-
-### What I Did
-- Completed the full authentication system for ContextCare
-- Set up Motor async MongoDB client with proper connection pooling
-- Built `/api/scans` — JWT-guarded endpoint returning doctor's full scan history
-- Built `/api/reports/{id}/pdf` — generates and streams a branded PDF for any scan
-
-### Auth System
-```python
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from jose import jwt, JWTError
-import bcrypt
-
-SECRET_KEY = "your-secret-key"
-ALGORITHM = "HS256"
-security = HTTPBearer()
-
-# Register
-@app.post("/api/auth/register")
-async def register(doctor: DoctorRegistration):
-    # Hash password with bcrypt
-    hashed = bcrypt.hashpw(doctor.password.encode(), bcrypt.gensalt())
-    
-    doctor_doc = {
-        "_id": str(uuid4()),
-        "email": doctor.email,
-        "name": doctor.name,
-        "password_hash": hashed.decode(),
-        "created_at": datetime.now()
+      const ref = METRIC_REFERENCE[key];
+      found[key] = { key, label: ref.label, value, unit: ref.unit,
+                     refMin: ref.min, refMax: ref.max,
+                     status: getStatus(value, ref.min, ref.max) };
+      break; // a line maps to a single metric
     }
-    await db.doctors.insert_one(doctor_doc)
-    
-    # Return JWT immediately (no separate login step)
-    token = jwt.encode({"sub": doctor_doc["_id"], "email": doctor.email}, SECRET_KEY, ALGORITHM)
-    return {"token": token, "doctor_id": doctor_doc["_id"]}
-
-# JWT dependency
-async def get_current_doctor(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    try:
-        payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
-        return payload
-    except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid token")
-
-# Protected route
-@app.get("/api/scans")
-async def get_scans(doctor = Depends(get_current_doctor)):
-    scans = await db.patient_scans.find(
-        {"doctor_id": doctor["sub"]},
-        sort=[("received_at", -1)]  # newest first
-    ).to_list(50)
-    return scans
-```
-
-### MongoDB Motor — Async Pattern
-```python
-# database.py
-from motor.motor_asyncio import AsyncIOMotorClient
-
-client = AsyncIOMotorClient("mongodb://localhost:27017")
-db = client.contextcare
-
-# Motor queries are all async — use await
-await db.doctors.insert_one(doc)           # insert
-await db.patient_scans.find_one({"_id": id})  # find one
-await db.patient_scans.find(query).to_list(50)  # find many
-```
-
-### ReportLab PDF Generation
-```python
-from reportlab.lib.pagesizes import A4
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Table
-from io import BytesIO
-
-def generate_pdf(scan: dict) -> bytes:
-    buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4)
-    
-    elements = []
-    # Header
-    elements.append(Paragraph("ContextCare AI — Diagnostic Report", title_style))
-    elements.append(Paragraph(f"Patient: {scan['document']['patient_name']}", normal_style))
-    
-    # Metrics table
-    metrics_data = [["Metric", "Value", "Unit", "Status", "Normal Range"]]
-    for m in scan['document']['metrics']:
-        metrics_data.append([m['name'], m['value'], m['unit'], m['status'], m['normal_range']])
-    
-    table = Table(metrics_data)
-    elements.append(table)
-    
-    doc.build(elements)
-    return buffer.getvalue()
-
-@app.get("/api/reports/{scan_id}/pdf")
-async def download_pdf(scan_id: str):
-    scan = await db.patient_scans.find_one({"_id": scan_id})
-    pdf_bytes = generate_pdf(scan)
-    return Response(pdf_bytes, media_type="application/pdf",
-                   headers={"Content-Disposition": f"attachment; filename=report-{scan_id}.pdf"})
+  }
+  return METRIC_ORDER.filter((k) => found[k]).map((k) => found[k]);
+}
 ```
 
 ### Key Learnings
-- Motor (async MongoDB driver) uses the same API as PyMongo but with `await` — muscle memory transfers
-- `Depends(get_current_doctor)` is FastAPI's dependency injection — cleaner than manually checking headers in every route
-- ReportLab's `SimpleDocTemplate` handles page breaks automatically — no manual pagination needed
-- `BytesIO` buffer lets you build the PDF in memory and stream it directly — no temp files on disk
+- Going alias-table + regex instead of a full NER model was the right call for a known, fixed set of 6 metrics — easy to extend (just add an entry), easy to test, no model weights to ship
+- "First match wins" per metric per line keeps the parser predictable — important when OCR output is noisy and a naive global regex could double-count
+- Keeping `METRIC_REFERENCE` as the single source of truth (used by the parser, the API validation in `/api/scans/pair`, the UI cards, and the seed script) means the normal ranges only ever need to be defined once
+
+---
+
+## Day 13 — 30 May 2026 · Socket.IO Real-Time Hub
+
+### What I Did
+- Wired a custom `server.ts` that creates one HTTP server, attaches both the Next.js request handler **and** a Socket.IO server to it — one process, one port
+- Implemented the "doctor room" pattern — a dashboard socket joins `doctor:<id>` on connect; new scans get emitted only into that room
+- Stashed the `io` instance on `globalThis` so Next.js API routes (running in the same process) can emit into a room without needing their own socket reference
+
+### Custom Server + Socket Rooms
+```typescript
+// server.ts
+const server = createServer((req, res) => handle(req, res, parse(req.url!, true)));
+const io = new IOServer(server, { cors: { origin: "*" }, path: "/socket.io" });
+setIo(io); // make it reachable from API routes
+
+io.on("connection", (socket) => {
+  socket.on("join", (doctorId: string) => {
+    if (typeof doctorId === "string" && doctorId.length > 0) {
+      socket.join(doctorRoom(doctorId));
+    }
+  });
+  socket.on("ping:heartbeat", () => socket.emit("pong:heartbeat"));
+});
+
+server.listen(port, hostname);
+```
+
+```typescript
+// lib/socket.ts — bridge between API routes and the io instance above
+const globalForIo = globalThis as unknown as { io?: IOServer };
+export function setIo(io: IOServer) { globalForIo.io = io; }
+export function getIo() { return globalForIo.io; }
+export function doctorRoom(doctorId: string) { return `doctor:${doctorId}`; }
+```
+
+### Key Learnings
+- A custom Node server (instead of plain `next start`) is the one real infrastructure trade-off of this approach — you lose some of Vercel's zero-config hosting, but you gain a real persistent WebSocket server, which Vercel's serverless functions can't hold open anyway
+- Stashing `io` on `globalThis` is a pragmatic way to share one instance between the server bootstrap and API route handlers that run in the same Node process — would need a different pattern (e.g. a separate pub/sub service) if this ever had to scale to multiple instances
+- A heartbeat ping/pong pair is cheap insurance against "zombie" sockets that look connected but are dead
+
+---
+
+## Day 14 — 31 May 2026 · PIN Auth + QR Pairing + Patient Flow
+
+### What I Did
+- Built doctor login: `POST /api/doctor/login` — checks a 4–6 digit PIN against bcrypt hashes of all seeded doctors, then opens an `iron-session` encrypted cookie session (no JWT, no localStorage)
+- Built `GET /api/doctor/qr` — returns the doctor's stable pairing token as a QR code data URL (`qrcode` package)
+- Built `POST /api/scans/pair` — the endpoint a patient hits after scanning the QR: validates the doctor token, finds-or-creates the `Patient` row (keyed by doctor + phone), saves the scan + metrics, and pushes it live via `emitScanCreated()`
+
+### PIN Login
+```typescript
+// app/api/doctor/login/route.ts
+const pin = (body?.pin ?? "").toString().trim();
+if (!/^\d{4,6}$/.test(pin)) {
+  return NextResponse.json({ error: "Enter your 4–6 digit PIN." }, { status: 400 });
+}
+
+const doctors = await prisma.doctor.findMany();
+let matched = null;
+for (const d of doctors) {
+  if (await bcrypt.compare(pin, d.pinHash)) { matched = d; break; }
+}
+if (!matched) {
+  return NextResponse.json({ error: "That PIN didn't match any doctor." }, { status: 401 });
+}
+
+const session = await getSession();
+session.doctorId = matched.id;
+await session.save();
+```
+
+### Patient Pairing + Scan Creation
+```typescript
+// app/api/scans/pair/route.ts (trimmed)
+const doctor = await prisma.doctor.findUnique({ where: { qrToken: doctorToken } });
+if (!doctor) return NextResponse.json({ error: "Doctor code not recognized." }, { status: 404 });
+
+let patient = await prisma.patient.findUnique({
+  where: { doctorId_phone: { doctorId: doctor.id, phone: patientPhone } },
+});
+if (!patient) {
+  patient = await prisma.patient.create({ data: { doctorId: doctor.id, name: patientName, phone: patientPhone } });
+}
+
+const scan = await prisma.scan.create({
+  data: { patientId: patient.id, rawText: body?.rawText ?? null, metrics: { create: metricRows } },
+  include: { metrics: true },
+});
+
+emitScanCreated(doctor.id, { patient, scan, hasCritical: scan.metrics.some(m => m.status === "critical") });
+```
+
+### Key Learnings
+- A short numeric PIN (vs. email/password) is a deliberate UX call for a shared clinic device — fast to type, easy to change, no "forgot password" flow needed
+- `iron-session` gives an encrypted, stateless cookie session — no session table in the DB, and no JWT secret to leak via localStorage/XSS
+- "Find-or-create by `(doctorId, phone)`" on the patient is what makes repeat visits build one continuous trend line instead of fragmenting into duplicate patient records
 
 ---
 
@@ -563,14 +405,13 @@ async def download_pdf(scan_id: str):
 | Metric | Count |
 |--------|-------|
 | New Projects Started | 1 (ContextCare AI) |
-| API Endpoints Built | 8 |
-| Preprocessing Steps | 8 (OpenCV pipeline) |
-| Tech Stacks Used | 5 (FastAPI + MongoDB + Docker + spaCy + ReportLab) |
-| Lines of Python | ~600 |
-| WebSocket Connections Managed | Real-time, multi-session |
+| API Routes Built | 7 (login, qr, extract, pair, patients, notes, pdf) |
+| DB Models | 5 (Doctor, Patient, Scan, Metric, Note) |
+| Canonical Metrics Tracked | 6 (FBS, Total/HDL/LDL Cholesterol, Triglycerides, Hemoglobin) |
+| Real-Time Channel | Socket.IO, room-per-doctor |
 
-**What went well:** The pluggable `BaseMedicalExtractor` design decision on Day 12 was worth the extra 2 hours — it makes the NER engine genuinely swappable. The OCR pipeline preprocessing on Day 10 pushed Tesseract accuracy from ~60% to ~92% on test images.
+**What went well:** Keeping everything inside one Next.js process (API routes + custom server + Socket.IO) instead of standing up a separate backend service paid off immediately — one thing to run locally, one thing to deploy. The alias-table metric parser on Day 12 was simple to build and very easy to extend.
 
-**What was hard:** Motor's async cursor `.to_list()` syntax caught me off guard — forgot that `find()` returns a cursor, not a list, and you need `.to_list(limit)` to materialize it. Also Docker port conflicts (MongoDB default 27017 clashing with local Mongo install) ate 30 minutes.
+**What was hard:** Tesseract.js's worker-path resolution inside a bundled Next.js server context was the trickiest bug of the week — had to manually resolve the worker script and WASM core paths instead of trusting the library's auto-detection. Getting the `(doctorId, phone)` composite-unique constraint right in Prisma (so repeat patients don't duplicate) also took a couple of tries.
 
-**Next week:** ContextCare AI — Next.js 14 frontend (App Router, auth form, live dashboard with Recharts + WebSocket), then integrate `render.yaml` for cloud deployment.
+**Next week:** ContextCare AI — finish the patient-facing pairing UI (camera capture, review screen) and the doctor dashboard (trend charts, notes, PDF export), then prep for deployment.
